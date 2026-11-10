@@ -1,0 +1,8 @@
+{
+  "parentAgent": "build",
+  "sideAgent": "plan",
+  "sameModel": true,
+  "sameToolDefinitions": true,
+  "unchangedParentPrefix": true,
+  "readOnlyInstructionPresent": false
+}

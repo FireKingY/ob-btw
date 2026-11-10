@@ -1,0 +1,54 @@
+{
+  "run": "btw-cache-1794230787627",
+  "model": "codex/gpt-6.1-sol",
+  "transport": "live Magpie gateway /v1/responses",
+  "syntheticInput": true,
+  "sharedPrefixSha256": "e9d4561bb9451d22de0bc1f3d01ada2c84861ae3aa56e0ac83b00646d273edc8",
+  "sharedPrefixCharacters": 23758,
+  "results": [
+    {
+      "name": "parent-cold",
+      "inputTokens": 10047,
+      "cachedTokens": 3968,
+      "cacheHitPercent": 39.49,
+      "outputTokens": 5,
+      "elapsedMs": 4234
+    },
+    {
+      "name": "parent-repeat",
+      "inputTokens": 10047,
+      "cachedTokens": 3968,
+      "cacheHitPercent": 39.49,
+      "outputTokens": 5,
+      "elapsedMs": 2038
+    },
+    {
+      "name": "side-boundary-at-tail",
+      "inputTokens": 10329,
+      "cachedTokens": 9856,
+      "cacheHitPercent": 95.42,
+      "outputTokens": 5,
+      "elapsedMs": 2185
+    },
+    {
+      "name": "side-tail-repeat",
+      "inputTokens": 10329,
+      "cachedTokens": 10112,
+      "cacheHitPercent": 97.9,
+      "outputTokens": 5,
+      "elapsedMs": 2205
+    },
+    {
+      "name": "boundary-at-front-control",
+      "inputTokens": 10333,
+      "cachedTokens": 3968,
+      "cacheHitPercent": 38.4,
+      "outputTokens": 5,
+      "elapsedMs": 3039
+    }
+  ],
+  "publicPromptSource": "https://raw.githubusercontent.com/openai/codex/8703d32bd0ea5cf26768859a3dd476df906ba053/codex-rs/context-fragments/src/side_conversation.rs",
+  "publicPromptMatches": true,
+  "boundarySha256": "fa04c84686daa9d52d0f6703dab85bf3db3a3c4976f2fb70d84a8713e779b1d7",
+  "scope": "Controlled live-provider placement test with synthetic reference text; not an end-to-end UI cache measurement."
+}

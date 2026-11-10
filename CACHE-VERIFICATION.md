@@ -1,0 +1,49 @@
+# Side-chat cache verification
+
+The test uses `codex/gpt-6.1-sol` through the local Magpie Responses API.
+The requests use synthetic reference records, the exact public Codex boundary text, and the current read-only instruction.
+The boundary matches the pinned [public source](https://github.com/openai/codex/blob/8703d32bd0ea5cf26768859a3dd476df906ba053/codex-rs/context-fragments/src/side_conversation.rs).
+
+Five requests run in sequence with the same model and fixed instruction.
+Each response contains five output tokens.
+The cache ratio is `cached_tokens / input_tokens` from the provider response.
+
+| Request | Input tokens | Cached tokens | Cache ratio |
+| --- | ---: | ---: | ---: |
+| First parent request | 10,047 | 3,968 | 39.49% |
+| Repeated parent request | 10,047 | 9,856 | 98.10% |
+| Boundary and read-only instruction after inherited history | 10,466 | 9,856 | 94.17% |
+| Repeated side request | 10,466 | 10,240 | 97.84% |
+| Boundary and read-only instruction at the front | 10,470 | 3,968 | 37.90% |
+
+The first request already includes 3,968 cached tokens.
+Cache availability can change as the provider processes successive requests.
+The front control uses one additional user-message envelope.
+The report retains the input counts for each case.
+
+These calls go directly to the live provider gateway.
+Separate browser tests use real OpenCode to verify the stored transcript order and composer focus.
+Those tests cover `/btw`, `/btw question`, the menu, the shortcut, and selected text.
+A recording provider also examines the final requests from real OpenCode and the native OpenChamber UI.
+The main conversation runs as Build, and the new side chat also uses Build.
+The captured side request preserves all 4 messages of the latest running parent request as an identical serialized prefix.
+The comparison includes message roles, text, assistant tool calls, and tool results.
+Both serialized prefixes have this SHA-256:
+
+`39120967f94376542f68c023f42aa236e643b92189c9d28db41a3d8568319feb`
+
+The model, tool definitions, and all other request options match exactly.
+The fixed boundary and read-only instruction follow the inherited history.
+The side question follows those instructions.
+A side-chat follow-up preserves the complete previous side request as its prefix.
+Its new reminder follows that prefix.
+Appending the boundary alone sends no provider request.
+Project conversations can produce different ratios because their models, tools, and context differ.
+
+The current numerical evidence is in `verification/cache-read-only-live.json`.
+The earlier boundary-only experiment remains in `verification/cache-live.json`.
+The native agent and prefix comparison is in `verification/same-agent-after.json`.
+The public record contains comparison results and hashes.
+Raw requests contain local environment instructions and stay outside this repository.
+The earlier behavior, with Build in the parent and Plan in the side chat, is in `verification/same-agent-before.json`.
+The earlier completed-turn request comparison remains in `verification/wire.json`.

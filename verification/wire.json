@@ -1,0 +1,19 @@
+{
+  "finalProviderRequestOrder": "passed",
+  "inheritedIndex": 1,
+  "boundaryIndex": 3,
+  "questionIndex": 4,
+  "parentMessages": 2,
+  "commonPrefixMessages": 2,
+  "unchangedParentRequestPrefix": true,
+  "boundarySha256": "fa04c84686daa9d52d0f6703dab85bf3db3a3c4976f2fb70d84a8713e779b1d7",
+  "boundaryDoesNotStartExecution": true,
+  "requestRoles": [
+    "system",
+    "user",
+    "assistant",
+    "user",
+    "user"
+  ],
+  "scope": "Real OpenCode and OpenChamber serialization, recording proxy, deterministic fixture model."
+}
