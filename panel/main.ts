@@ -58,7 +58,7 @@ async function load() {
     if (project) {
       const stop = await host.onSessions(project.id, (snapshot) => {
         if (revision !== generation || snapshot.kind !== 'sessions') return;
-        native = snapshot.sessions.filter((entry) => !entry.archivedAt && /^btw(?::|$)/i.test(entry.title));
+        native = snapshot.sessions.filter((entry) => !entry.archivedAt && /^(?:live-)?btw(?::|$)/i.test(entry.title));
         paint();
       });
       if (revision !== generation) stop();

@@ -75,7 +75,7 @@ const provider = createServer(async (request, response) => {
 await new Promise<void>((resolve) => provider.listen(4848, '127.0.0.1', resolve));
 await mkdir(root, { recursive: true });
 let server: Awaited<ReturnType<typeof startIsolatedServer>> | undefined;
-const browser = await chromium.launch({ executablePath: process.env.BTW_CHROME_EXECUTABLE, headless: true,
+const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true,
     args: ['--disable-features=MacAppCodeSignClone'] });
 const page = await browser.newPage({ viewport: { width: 1800, height: 1040 } });
 const errors: string[] = [];

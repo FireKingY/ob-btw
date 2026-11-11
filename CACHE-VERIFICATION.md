@@ -47,3 +47,19 @@ The public record contains comparison results and hashes.
 Raw requests contain local environment instructions and stay outside this repository.
 The earlier behavior, with Build in the parent and Plan in the side chat, is in `verification/same-agent-before.json`.
 The earlier completed-turn request comparison remains in `verification/wire.json`.
+
+## Live side conversations
+
+`/live-btw` rebuilds its context before each question.
+The latest main snapshot remains the prefix.
+Earlier side questions, their original premises and final answers follow that prefix.
+The current question follows the closing marker.
+
+Native imports also receive the main session's instruction entries.
+The live send skips knowledge synchronization that can replace those captured entries.
+The integration scenario includes a custom instruction and a pinned-context entry.
+It compares complete serialized messages and every other model request option.
+It also covers draft migration, reload, session links and snapshot-read failure.
+
+The live replay comparison is separate from the controlled provider cache measurements in this report.
+The script uses a deterministic fixture provider and does not measure a live provider's cache ratio.

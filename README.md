@@ -1,6 +1,6 @@
 # ob-btw
 
-Native BTW side conversations for OpenChamber. Extension version **1.3.1**.
+Native BTW side conversations for OpenChamber. Extension version **1.4.0**.
 
 This revision opens each BTW with the native OpenChamber chat panel.
 The native panel owns the transcript, Markdown, code blocks, tables, tools, composer, permissions, and streaming.
@@ -16,6 +16,7 @@ The published OpenChamber 2.7.0 SDK does not expose this operation.
 The source build uses the companion SDK source through `tsconfig.json`.
 The package keeps the required SDK dependency at `2.7.0`.
 The compiled scripts need no source checkout at runtime.
+Live context rebuilds require OpenCode 2.2.6, which the target host bundles.
 
 Without the host change, the extension shows the missing capability and leaves the current chat selected.
 
@@ -44,6 +45,8 @@ The repository includes the compiled panel and service scripts.
 
 - Enter `/btw` in the main composer to open a new native side chat.
 - Enter `/btw question` to send a question in a new native side chat.
+- Enter `/live-btw` to open a side chat that refreshes its main-session snapshot before each question.
+- Enter `/live-btw question` to open that live side chat and send its first question.
 - Use the native tabs to switch between multiple BTW sessions.
 - Open the BTW rail icon to select an existing conversation.
 - In the session menu, select **New side chat**.
@@ -60,6 +63,7 @@ The host forks the source conversation at its latest server state.
 The current turn can still be running, including the first turn.
 The snapshot includes the progress and tool results already in that history.
 It keeps inherited messages as context.
+The panel hides inherited main-session messages and shows the side conversation only.
 Each side chat has its own session and composer.
 Opening an empty BTW does not call a model.
 The main conversation keeps its selection.
@@ -72,6 +76,7 @@ Older side chats show a snapshot label without a time.
 Each prompt states that inherited tasks are reference context.
 Later messages in the parent do not automatically enter the side chat.
 Create another side chat to capture newer progress.
+Live side chats capture that newer progress when the next question is sent.
 Each new fork receives the public Codex boundary prompt after its inherited history.
 This note does not start model execution.
 Later prompts keep the existing reminder without moving that boundary.
@@ -93,6 +98,42 @@ The instruction is a prompt policy, and the existing permission system still app
 
 Both `/btw` and `/btw question` focus the destination composer after the panel becomes interactive.
 Text typed during creation remains in that side chat.
+
+## Live context
+
+`/live-btw` uses the native desktop or desktop web chat panel.
+Mobile and VS Code keep the existing `/btw` command.
+
+Each live question uses this model context:
+
+```text
+Original system instructions and tool definitions
+Latest complete main-session snapshot
+live-btw prompt-start and the read-only policy
+Earlier side questions, each with its original main-session premise and final answer
+live-btw prompt-end
+The new user question
+```
+
+Earlier side reasoning and tool calls stay outside the rebuilt request.
+User files and quoted context remain attached to their original question.
+The current side turn uses native streaming and tools.
+The next rebuild retains its final answer.
+
+Each question keeps the main-session premise captured before its original delivery.
+New main progress does not rewrite that premise.
+The context refresh runs when a question is sent.
+Opening an empty live side chat sends no model request.
+An active live answer must finish before another question is sent.
+
+The panel keeps one logical tab while the host prepares a new native transcript for each question.
+Draft text and attachments typed during preparation move to that transcript.
+Reloading or reopening a session link follows the current transcript.
+A failed snapshot read preserves the previous conversation and restores the unsent question.
+
+The rebuild also copies the main session's instruction entries.
+The normal knowledge-sync path leaves those captured entries unchanged for a live send.
+This preserves the parent prefix when the main chat has pinned notes or other session instructions.
 
 The live cache experiment uses the same boundary text, read-only instruction, and synthetic reference records.
 Its results come from the provider's reported input and cached token counts.
@@ -139,6 +180,7 @@ The script starts isolated OpenChamber, OpenCode, and fixture-provider instances
 
 ```bash
 node scripts/native-live-snapshot.ts
+node scripts/native-live-btw.ts
 ```
 
 The cache script requires a Responses API endpoint.

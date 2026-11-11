@@ -1,7 +1,8 @@
 diff --git a/packages/sdk/API.md b/packages/sdk/API.md
+index 70babe3..c58ee89 100644
 --- a/packages/sdk/API.md
 +++ b/packages/sdk/API.md
-@@ -105,7 +105,7 @@
+@@ -105,7 +105,7 @@ Each returns an unsubscribe function. State subscriptions replay the last known
  
  `theme.tokens` includes `primaryText`, `successText`, `warningText`, `errorText`, and `infoText`. The host computes these for text on neutral surfaces and the UI kit's tinted controls. Keep using the base colors for fills and `primaryForeground` for text on a solid primary fill.
  
@@ -10,7 +11,7 @@ diff --git a/packages/sdk/API.md b/packages/sdk/API.md
  
  `applyHostReady` exposes the computed colors as `--primary-text`, `--success-text`, `--warning-text`, `--error-text`, and `--info-text`, with matching `--oc-*-text` aliases. These are required theme fields. Apply each `onReady` snapshot to update them when the theme changes.
  
-@@ -213,7 +213,7 @@
+@@ -213,7 +213,7 @@ These methods extend the existing `sessions` capability. They expose registered
  | `onProjects(listener)` | `Promise<() => void>` |
  | `onWorktrees(projectId, listener)` | `Promise<() => void>` |
  | `onSessions(projectId, listener)` | `Promise<() => void>` |
@@ -20,21 +21,23 @@ diff --git a/packages/sdk/API.md b/packages/sdk/API.md
  Await subscription registration to handle refusal, then retain its returned unsubscribe function. Each subscription sends an initial snapshot, then changes. At most 32 subscriptions per iframe. `dispose()` releases them all. Unmount, disable, uninstall and runtime switch also release host subscriptions.
  
 diff --git a/packages/sdk/DOCUMENTATION.md b/packages/sdk/DOCUMENTATION.md
+index c084150..fea56ae 100644
 --- a/packages/sdk/DOCUMENTATION.md
 +++ b/packages/sdk/DOCUMENTATION.md
-@@ -26,6 +26,8 @@
- - `src/ui/`: guest drawing kit. Building blocks only (`mountButton`, `mountTextField`, `mountSearchField`, `mountSelect`, `mountCheckbox`, `mountSwitch`, `mountTabs`, `mountBadge`, `mountList`, `mountEmpty`, `mountSpinner`, `mountBanner`, `mountSeparator`, `mountProgress`, `mountMenu`, `mountText`); the guest composes screens. See `src/ui/DOCUMENTATION.md`. Import `@openchamber/sdk/ui`. Do not import this from `packages/ui`. Kit changes follow package semver, not `apiVersion`.
+@@ -27,6 +27,8 @@ Public author pages live in `packages/docs/content/docs/sdk.mdx`, `sdk/host.mdx`
  
  ## Invariants
-+
-+- `openSession(id, { navigation: 'side' })` uses the native context-panel chat tab for that session. The `sessions` grant still gates it. Each session gets its own dedupe key, and repeated opens focus its existing tab. The frame's project owns the panel and the session's directory owns its chat. An unregistered destination answers `NO_DIRECTORY` before opening an empty pinned view. Default navigation keeps the existing main-chat behavior. Web and Electron advertise `features.sideChat`. VS Code and mobile reject side navigation with `UNSUPPORTED`. The SDK refuses side navigation before posting when the host does not advertise it.
  
++- `openSession(id, { navigation: 'side' })` uses the native context-panel chat tab for that session. The `sessions` grant still gates it. Each session gets its own dedupe key, and repeated opens focus its existing tab. The frame's project owns the panel and the session's directory owns its chat. An unregistered destination answers `NO_DIRECTORY` before opening an empty pinned view. Default navigation keeps the existing main-chat behavior. Web and Electron advertise `features.sideChat`. VS Code and mobile reject side navigation with `UNSUPPORTED`. The SDK refuses side navigation before posting when the host does not advertise it.
++
  Notification services can receive kind `pull-request` for a GitHub merge the user requested here. It carries no session identity. The fixed event title and repository reference use the ordinary notification text fields; enterprise mode strips the reference at the host boundary. Services that validate notification kinds with an older SDK must update that parser to accept this additive kind.
  
+ - `scripts/bump-version.mjs` refreshes `bun.lock` after bumping package versions; include both in the release commit. Bun resolves `workspace:*` in published archives from lockfile versions, and a frozen install can succeed with stale versions. `scripts/bump-version.test.mjs` covers the bump, frozen install, and packed dependency versions together.
 diff --git a/packages/sdk/src/contract.ts b/packages/sdk/src/contract.ts
+index de76e6a..1cc37a4 100644
 --- a/packages/sdk/src/contract.ts
 +++ b/packages/sdk/src/contract.ts
-@@ -248,6 +248,8 @@
+@@ -248,6 +248,8 @@ export type HostReadyContext = {
    popover?: GuestPopoverContext;
    /** Optional capabilities advertised by a newer host. Absent remains compatible with older hosts. */
    features?: {
@@ -43,7 +46,7 @@ diff --git a/packages/sdk/src/contract.ts b/packages/sdk/src/contract.ts
      deviceStorage?: true;
      statusControls?: true;
      popovers?: true;
-@@ -782,7 +784,7 @@
+@@ -782,7 +784,7 @@ export type GuestMessage =
    | GuestShellOutputMessage
    | GuestShellStopMessage
    | GuestCall<'storage', GuestStorageRequest>
@@ -53,9 +56,10 @@ diff --git a/packages/sdk/src/contract.ts b/packages/sdk/src/contract.ts
    | GuestToastMessage
    | GuestOpenUrlMessage
 diff --git a/packages/sdk/src/host.test.ts b/packages/sdk/src/host.test.ts
+index bc26a13..5f56c43 100644
 --- a/packages/sdk/src/host.test.ts
 +++ b/packages/sdk/src/host.test.ts
-@@ -102,6 +102,29 @@
+@@ -102,6 +102,29 @@ const demoItem = {
  };
  
  describe('connectHost', () => {
@@ -86,9 +90,10 @@ diff --git a/packages/sdk/src/host.test.ts b/packages/sdk/src/host.test.ts
      const frame = createFrame();
      const host = connectHost({ target: frame, acceptSource: () => true });
 diff --git a/packages/sdk/src/host.ts b/packages/sdk/src/host.ts
+index f77d2e1..b7532d9 100644
 --- a/packages/sdk/src/host.ts
 +++ b/packages/sdk/src/host.ts
-@@ -106,7 +106,7 @@
+@@ -106,7 +106,7 @@ export type HostClient = {
    onRunningShells: (scope: GuestShellsScope, listener: (snapshot: GuestRunningShellsSnapshot) => void) => Promise<() => void>;
    readShellOutput: (shellId: string, options?: { cursor?: number; tailBytes?: number }) => Promise<GuestShellOutputResult>;
    stopShell: (shellId: string) => Promise<GuestShellStopResult>;
@@ -97,7 +102,7 @@ diff --git a/packages/sdk/src/host.ts b/packages/sdk/src/host.ts
    storage: {
      get: (key: string, options?: GuestStorageOptions) => Promise<JsonValue | undefined>;
      set: (key: string, value: JsonValue, options?: GuestStorageOptions) => Promise<void>;
-@@ -797,9 +797,14 @@
+@@ -797,9 +797,14 @@ export const connectHost = (options: HostClientOptions = {}): HostClient => {
        if (result?.stopped !== true) throw new HostRequestError('HOST_REJECTED', 'Host did not stop the shell.');
        return { stopped: true as const };
      },
@@ -115,25 +120,27 @@ diff --git a/packages/sdk/src/host.ts b/packages/sdk/src/host.ts
      storage: {
        get: async (key, options) => {
 diff --git a/packages/sdk/src/protocol.test.ts b/packages/sdk/src/protocol.test.ts
+index 9678714..536bcae 100644
 --- a/packages/sdk/src/protocol.test.ts
 +++ b/packages/sdk/src/protocol.test.ts
-@@ -20,6 +20,12 @@
-   parseGuestMessage,
+@@ -21,6 +21,12 @@ import {
    parseHostMessage,
  } from './protocol.ts';
-+
+ 
 +test('native side-chat destinations round-trip and reject unknown destinations', () => {
 +  const message = { channel: OPENCHAMBER_SDK_CHANNEL, v: 1, type: 'open-session', id: 'side', payload: { sessionId: 'ses-side', navigation: 'side' } };
 +  expect(guestMessageSchema.parse(message)).toEqual(message);
 +  expect(guestMessageSchema.safeParse({ ...message, payload: { ...message.payload, navigation: 'popup' } }).success).toBe(false);
 +});
- 
++
  test('background action messages round-trip and reject invalid payloads', () => {
    const action = { channel: OPENCHAMBER_SDK_CHANNEL, v: 1, type: 'action', id: 'a1', payload: {
+     kind: 'message', action: 'count', sessionId: 's1', sessionTitle: 'Session', directory: null, messageId: 'm1', role: 'assistant', text: 'Hello',
 diff --git a/packages/sdk/src/protocol.ts b/packages/sdk/src/protocol.ts
+index e91e987..4a3c39d 100644
 --- a/packages/sdk/src/protocol.ts
 +++ b/packages/sdk/src/protocol.ts
-@@ -290,6 +290,7 @@
+@@ -290,6 +290,7 @@ const readyPayloadSchema = z.object({
    block: z.object({ name: z.string().min(1), args: z.record(z.string(), z.string()), answered: z.string().nullable() }).optional(),
    popover: z.object({ id: z.string().min(1).max(80), data: guestPopoverDataSchema }).strict().optional(),
    features: z.object({
@@ -141,7 +148,7 @@ diff --git a/packages/sdk/src/protocol.ts b/packages/sdk/src/protocol.ts
      deviceStorage: z.literal(true).optional(),
      statusControls: z.literal(true).optional(),
      popovers: z.literal(true).optional(),
-@@ -509,7 +510,7 @@
+@@ -509,7 +510,7 @@ export const guestMessageSchema = z.discriminatedUnion('type', [
    z.object({ ...envelope, type: z.literal('popover-open'), id: z.string().min(1), payload: guestPopoverRequestSchema }),
    z.object({ ...envelope, type: z.literal('popover-close'), id: z.string().min(1), payload: z.object({ id: z.string().min(1).max(80), reason: z.enum(['closed', 'escape']).optional() }).strict() }),
    z.object({ ...envelope, type: z.literal('popover-anchor'), id: z.string().min(1), payload: z.object({ id: z.string().min(1).max(80), active: z.boolean() }).strict() }),
@@ -151,17 +158,57 @@ diff --git a/packages/sdk/src/protocol.ts b/packages/sdk/src/protocol.ts
      ...envelope,
      type: z.literal('hello'),
 diff --git a/packages/ui/src/components/chat/ChatContainer.tsx b/packages/ui/src/components/chat/ChatContainer.tsx
+index 3701cf6..94c3097 100644
 --- a/packages/ui/src/components/chat/ChatContainer.tsx
 +++ b/packages/ui/src/components/chat/ChatContainer.tsx
-@@ -9,6 +9,7 @@
+@@ -9,6 +9,9 @@ import { dropReplyCommandRows } from '@/lib/opencode/reply-command';
  import { isOpencodeNotFound, opencodeClient } from '@/lib/opencode/client';
  
  import { ChatInput } from './ChatInput';
 +import { BtwContextBanner } from './btw/BtwContextBanner';
++import { filterBtwTailMessages } from '@/lib/btw';
++import { getBtwBoundaryMessageID } from '@/lib/sessionBtwMetadata';
  import { CHAT_INPUT_EDITOR_SELECTOR } from './composer/editor/dom';
  import {
      ChatColumnActionsContext,
-@@ -2007,6 +2008,7 @@
+@@ -95,6 +98,7 @@ import { useStreamingStore } from '@/sync/streaming';
+ import {
+     useChildStoreManager,
+     useSessionMessageRecords,
++    useSessionSelector,
+     useSessionMessageLoadState,
+     useSessionMessageLoader,
+     useSyncDirectory,
+@@ -1030,10 +1034,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
+         suspendPartUpdates: Boolean(suspendedMessageId),
+         suspendPartUpdatesForMessageId: suspendedMessageId,
+     });
++    const btwBoundaryMessageID = useSessionSelector(currentSessionId, effectiveSessionDirectory, getBtwBoundaryMessageID);
+     const sessionMessages = React.useMemo(() => {
+         if (!currentSessionId) return EMPTY_MESSAGES;
+-        return isPageWaiting ? holdPendingSynthetic(sessionMessageRecords) : sessionMessageRecords;
+-    }, [currentSessionId, isPageWaiting, sessionMessageRecords]);
++        const ownRecords = filterBtwTailMessages(sessionMessageRecords, btwBoundaryMessageID);
++        return isPageWaiting ? holdPendingSynthetic(ownRecords) : ownRecords;
++    }, [btwBoundaryMessageID, currentSessionId, isPageWaiting, sessionMessageRecords]);
+     const authSessionExpired = useAuthSessionStore((store) => store.state !== 'ok');
+     const wasAuthExpiredRef = React.useRef(false);
+     const sessionMessageLoadState = useSessionMessageLoadState(
+@@ -1166,10 +1172,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
+         if (!currentSessionId) return null;
+         return {
+             limit: sessionMessages.length,
+-            complete: sessionMessageLoadState.complete || !sessionMessageLoadState.cursor,
++            complete: Boolean(btwBoundaryMessageID && sessionMessageRecords.some((record) => record.info.id === btwBoundaryMessageID))
++                || sessionMessageLoadState.complete || !sessionMessageLoadState.cursor,
+             loading: sessionMessageLoadState.status === 'loading',
+         };
+-    }, [currentSessionId, sessionMessageLoadState.complete, sessionMessageLoadState.cursor, sessionMessageLoadState.status, sessionMessages.length]);
++    }, [btwBoundaryMessageID, currentSessionId, sessionMessageRecords, sessionMessageLoadState.complete, sessionMessageLoadState.cursor, sessionMessageLoadState.status, sessionMessages.length]);
+ 
+     const { isMobile } = useDeviceInfo();
+     const isVSCode = isVSCodeRuntime();
+@@ -2007,6 +2014,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
  			className="relative flex min-w-0 flex-1 flex-col h-full bg-background"
  		>
  			{returnToParentButton}
@@ -170,9 +217,10 @@ diff --git a/packages/ui/src/components/chat/ChatContainer.tsx b/packages/ui/src
  			{chatSearch.open && currentSessionId && messageSearchEnabled ? (
  				<div className="pointer-events-none absolute inset-e-3 top-2 z-20">
 diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/components/chat/ChatInput.tsx
+index 520f1fe..c11435b 100644
 --- a/packages/ui/src/components/chat/ChatInput.tsx
 +++ b/packages/ui/src/components/chat/ChatInput.tsx
-@@ -47,6 +47,7 @@
+@@ -47,6 +47,7 @@ import {
      workDraftComposerKey,
      getChatDraftIdentityKey,
      clearChatDraft,
@@ -180,17 +228,17 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
      type ChatDraftIdentity,
      type ChatDraftSnapshot,
  } from '@/lib/chatDraftPersistence';
-@@ -56,7 +57,8 @@
+@@ -56,7 +57,8 @@ import { useReviewFlowStart } from '@/components/session/useReviewFlowStart';
  import { BtwPanel } from './btw/BtwPanel';
  import { btwHoldsDock, useBtwPanelState } from './btw/useBtwPanelState';
  import { btwModelAvailability, resolveBtwSelection, useBtwStore } from '@/stores/useBtwStore';
 -import { buildBtwSyntheticTexts, btwPendingComposerKey, preparePendingBtwSend, startBtwSession } from '@/lib/btw';
 +import { buildBtwSyntheticTexts, btwPendingComposerKey, btwSessionTitle, openBtwSidePanel, preparePendingBtwSend, startBtwSession } from '@/lib/btw';
-+import { isBtwSession } from '@/lib/sessionBtwMetadata';
++import { isBtwSession, isLiveBtwSession } from '@/lib/sessionBtwMetadata';
  import { AttachedFilesList, AttachedVSCodeFileChips, ActiveEditorFileSuggestion } from './FileAttachment';
  import { lazyWithChunkRecovery } from '@/lib/chunkLoadRecovery';
  import type { ToolPopupContent } from './message/types';
-@@ -89,6 +91,7 @@
+@@ -89,6 +91,7 @@ import { toast } from '@/components/ui';
  // useMessageStore removed — messages now come from sync system
  import { getSettingsSurface } from '@/lib/settings/surface';
  import { isVSCodeRuntime } from '@/lib/desktop';
@@ -198,7 +246,7 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
  import { useTabletLayout } from '@/lib/device';
  import { useHardwareKeyboard } from '@/lib/hardwareKeyboard';
  import { isCapacitorApp } from '@/lib/platform';
-@@ -152,7 +155,7 @@
+@@ -152,7 +155,7 @@ import { selectAvailableSkillsForDirectory, useSkillsStore } from '@/stores/useS
  import { selectCommandsForComposer, useCommandsStore } from '@/stores/useCommandsStore';
  import { useComposerConfigDirectory } from '@/hooks/useComposerConfigDirectory';
  import { useRuntimeAPIs } from '@/hooks/useRuntimeAPIs';
@@ -207,7 +255,7 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
  import { usePermissionStore } from '@/stores/permissionStore';
  import { cyclePermissionMode } from './permissionAutoAccept';
  import { displayedPermissionMode, nextPermissionMode } from '@/stores/utils/permissionAutoAccept';
-@@ -305,7 +308,7 @@
+@@ -305,7 +308,7 @@ import {
      mapInputHistoryEntriesToValues,
      mergeSessionInputHistory,
  } from './inputHistory';
@@ -216,19 +264,22 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
  import { changeRequestCopy } from '@/lib/source-control/changeRequestCopy';
  
  // Lazy like in ChatMessage: a static import would pull the @pierre/diffs and
-@@ -594,6 +597,11 @@
+@@ -594,6 +597,14 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
      // instead of the main session. Collapsed keeps the fork alive (chip stays
      // visible) while the composer talks to the main session again.
      const btwPanel = useBtwPanelState(currentSessionId, currentSessionDirectoryForSync ?? currentDirectory ?? undefined);
 +    const nativeBtwCreatingRef = React.useRef(false);
-+    const nativeBtwRequestRef = React.useRef<{ parentSessionId: string; panelDirectory: string; collapsed: boolean } | null>(null);
++    const nativeBtwRequestRef = React.useRef<{ parentSessionId: string; panelDirectory: string; collapsed: boolean; mode?: 'live' } | null>(null);
 +    const currentSessionIsBtw = useSessionSelector(
 +        currentSessionId, currentSessionDirectoryForSync ?? currentDirectory ?? undefined, isBtwSession,
++    );
++    const currentSessionIsLiveBtw = useSessionSelector(
++        currentSessionId, currentSessionDirectoryForSync ?? currentDirectory ?? undefined, isLiveBtwSession,
 +    );
      const pendingForms = useScopedBlockingForms(currentSessionId, currentSessionDirectoryForSync ?? currentDirectory ?? undefined);
      const pendingPermissions = useScopedBlockingPermissions(currentSessionId, currentSessionDirectoryForSync ?? currentDirectory ?? undefined);
      const hasPendingPermission = pendingPermissions.length > 0;
-@@ -626,6 +634,8 @@
+@@ -626,6 +637,8 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
          ),
          [activeRuntimeKey, btwComposerSessionId, currentDirectory, currentSessionDirectoryForSync, currentSessionId, isBtwActive, isNewChatDraft, workDraftKey],
      );
@@ -237,7 +288,7 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
      const claimAttachmentSlot = React.useCallback(() => {
          useInputStore.getState().selectAttachmentDraft(chatDraftIdentity);
      }, [chatDraftIdentity]);
-@@ -766,9 +776,10 @@
+@@ -766,9 +779,10 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
          isModelAvailable: btwModelAvailability(providerCatalog, autoReady),
          savedModel: btwModelSelection,
          savedVariant: btwSavedVariant,
@@ -249,7 +300,7 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
      React.useEffect(() => {
          const { model, agent, variant } = effectiveBtwSelection;
          if (!isBtwActive || !btwComposerSessionId || !model || !agent) return;
-@@ -838,6 +849,7 @@
+@@ -838,6 +852,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
          cycle_favorite_model_backward: (event) => cycleBtwFavoriteModel(event, -1),
      } : {});
      const isMobile = useUIStore((state) => state.isMobile);
@@ -257,7 +308,16 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
      const hasHardwareKeyboard = useHardwareKeyboard();
      const enterToSend = useUIStore((state) => state.enterToSend);
      const enterToSendConfigured = useUIStore((state) => state.enterToSendConfigured);
-@@ -1579,9 +1591,58 @@
+@@ -1015,7 +1030,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+         : selectAvailableSkillsForDirectory(s, commandsTarget.directory));
+     const knownSlashNames = React.useMemo(() => {
+         const names = new Set<string>([
+-            'init', 'review', 'undo', 'redo', 'timeline', 'compact', 'fork', 'btw', 'summary', 'workspace-review', 'plan-feature', 'craft-goal', 'schedule-task', 'catch-up', 'debug', 'weigh', 'explore',
++            'init', 'review', 'undo', 'redo', 'timeline', 'compact', 'fork', 'btw', 'live-btw', 'summary', 'workspace-review', 'plan-feature', 'craft-goal', 'schedule-task', 'catch-up', 'debug', 'weigh', 'explore',
+         ]);
+         if (!isMobile && !isVSCodeRuntime()) names.add('handoff-review');
+         for (const command of availableCommands) names.add(command.name.toLowerCase());
+@@ -1579,9 +1594,58 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
          panels.setPanelState(currentSessionId, { collapsed: true });
      }, [activeRuntimeKey, btwSessionId, currentDirectory, currentSessionDirectoryForSync, currentSessionId]);
  
@@ -268,7 +328,7 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
 +            : message || fallback;
 +    }, [t]);
 +
-+    const openNativeBtwDraft = React.useCallback(async (text: string, takeComposer = false) => {
++    const openNativeBtwDraft = React.useCallback(async (text: string, takeComposer = false, mode?: 'live') => {
 +        if (nativeBtwCreatingRef.current || !currentSessionId) return;
 +        const targetDirectory = currentSessionDirectoryForSync ?? currentDirectory;
 +        const panelDirectory = resolveEffectiveDirectory() ?? targetDirectory;
@@ -284,7 +344,7 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
 +                parentSessionId: currentSessionId, directory: targetDirectory, question: '',
 +                expectedRuntimeKey: activeRuntimeKey, providerID: currentProviderId,
 +                modelID: currentModelId, agent: currentAgentName, variant: btwComposerVariant,
-+                presentation: 'side',
++                presentation: 'side', mode,
 +            });
 +            if (getRuntimeKey() !== activeRuntimeKey) return;
 +            const forkIdentity = createChatDraftIdentity(activeRuntimeKey, fork.directory ?? targetDirectory, fork.id);
@@ -297,7 +357,7 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
 +            }
 +            writeChatDraft(forkIdentity, text, new Set());
 +            useInputStore.getState().setPendingSessionRestore(fork.id, text);
-+            openBtwSidePanel(fork, panelDirectory, btwSessionTitle(''));
++            openBtwSidePanel(fork, panelDirectory, btwSessionTitle('', mode));
 +        } catch (error) {
 +            toast.error(getSubmitErrorMessage(error, t('chat.btw.toast.createFailed')));
 +        } finally {
@@ -316,7 +376,7 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
          if (!isBtwActive) {
              useBtwStore.getState().setPanelState(
                  request.parentSessionId,
-@@ -1594,7 +1655,7 @@
+@@ -1594,7 +1658,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
          if (!consumed) return;
          restoreDraft(chatDraftIdentity, consumed.text, new Set());
          queueMicrotask(() => focusColumnInput());
@@ -325,28 +385,40 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
  
      // Focus textarea when new session draft is opened
      const prevNewSessionDraftOpenRef = React.useRef(newSessionDraftOpen);
-@@ -1798,7 +1859,10 @@
+@@ -1726,6 +1790,11 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+ 
+     // Add message to queue instead of sending
+     const handleQueueMessage = React.useCallback(async () => {
++        if (currentSessionIsLiveBtw) {
++            if (currentSessionPhase === 'idle') void handleSubmitRef.current();
++            else toast.info(t('chat.liveBtw.wait'));
++            return;
++        }
+         // The comment's exit paths are attach/cancel; queueing a real prompt
+         // underneath comment mode must never fire.
+         if (isMobileCommentOpen()) return;
+@@ -1798,7 +1867,10 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
          const expandedDrafts = await expandCommentSnippets(drafts, useSnippetsStore.getState().expandText);
          const context = buildComposerContext({
              inlineComments: expandedDrafts,
 -            syntheticTexts: syntheticParts.map((part) => part.text),
 +            syntheticTexts: [
-+                ...buildBtwSyntheticTexts({ isBtwActive: currentSessionIsBtw, isPromotedBtwSession }),
++                ...buildBtwSyntheticTexts({ isBtwActive: currentSessionIsBtw, isPromotedBtwSession, isLiveBtw: currentSessionIsLiveBtw }),
 +                ...syntheticParts.map((part) => part.text),
 +            ],
              references: [...linked.map(toContextReference), ...sessionMentionsIn(messageToQueue)],
          }, skillInstruction);
          const attachmentsToQueue = [...composerAttachments, ...mentionAttachments];
-@@ -1879,7 +1943,7 @@
+@@ -1879,7 +1951,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
          if (inputMode !== 'shell') settleModelPick();
          void resumeAfterQueue().catch(console.warn);
          recordLinkedReferences(queueSessionId, queueTarget.directory, linked);
 -    }, [getCurrentInputSnapshot, currentSessionId, messageQueueTarget, inputMode, hasDrafts, guestCommands, attachedFiles, sanitizeAttachmentsForSend, prepareReadOnSendMentions, extractInlineFileMentions, mentionableAgents, availableSkills, consumePendingSyntheticParts, mailboxTarget, inlineDraftTarget, consumeDrafts, linkedReferences, scrollToLatest, clearAttachedFiles, chatDraftIdentity, setLinkedReferencesFor, updateLinkedReferencesFor, isMobile, isMobileCommentOpen, addToQueue, currentProviderId, currentModelId, currentAgentName, currentVariant, t, readSessionMentionsBeforeSend, sessionMentionsIn]);
-+    }, [getCurrentInputSnapshot, currentSessionId, currentSessionIsBtw, isPromotedBtwSession, messageQueueTarget, inputMode, hasDrafts, guestCommands, attachedFiles, sanitizeAttachmentsForSend, prepareReadOnSendMentions, extractInlineFileMentions, mentionableAgents, availableSkills, consumePendingSyntheticParts, mailboxTarget, inlineDraftTarget, consumeDrafts, linkedReferences, scrollToLatest, clearAttachedFiles, chatDraftIdentity, setLinkedReferencesFor, updateLinkedReferencesFor, isMobile, isMobileCommentOpen, addToQueue, currentProviderId, currentModelId, currentAgentName, currentVariant, t, readSessionMentionsBeforeSend, sessionMentionsIn]);
++    }, [currentSessionIsLiveBtw, currentSessionPhase, getCurrentInputSnapshot, currentSessionId, currentSessionIsBtw, isPromotedBtwSession, messageQueueTarget, inputMode, hasDrafts, guestCommands, attachedFiles, sanitizeAttachmentsForSend, prepareReadOnSendMentions, extractInlineFileMentions, mentionableAgents, availableSkills, consumePendingSyntheticParts, mailboxTarget, inlineDraftTarget, consumeDrafts, linkedReferences, scrollToLatest, clearAttachedFiles, chatDraftIdentity, setLinkedReferencesFor, updateLinkedReferencesFor, isMobile, isMobileCommentOpen, addToQueue, currentProviderId, currentModelId, currentAgentName, currentVariant, t, readSessionMentionsBeforeSend, sessionMentionsIn]);
  
      /** Put the context a queued message was captured with back on the composer chips. */
      const restoreQueuedContext = React.useCallback((context: readonly QueuedContextPart[]) => {
-@@ -2021,13 +2085,6 @@
+@@ -2021,13 +2093,6 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
      const trackerDescriptors = useTrackerDescriptors();
      const trackerSources = useTrackerSources();
  
@@ -360,14 +432,27 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
      const handleSubmit = async (options?: SubmitOptions) => {
          // Comment mode's only submit is attach; every other send path must be
          // inert while it is open.
-@@ -2110,18 +2167,40 @@
+@@ -2097,7 +2162,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+             : null;
+         if (commandPlan?.kind === 'prompt') {
+             const magicCommand = findMagicPromptCommand(commandPlan.command.name);
+-            const commandIsAvailable = commandPlan.command.name === 'btw'
++            const commandIsAvailable = commandPlan.command.name === 'btw' || commandPlan.command.name === 'live-btw'
+                 ? Boolean(currentSessionId)
+                 : magicCommand !== null && canRunCommand(magicCommand, {
+                     hasSession: Boolean(currentSessionId),
+@@ -2109,19 +2174,43 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+ 
          // Enter BTW before sending so the question uses its isolated selections.
          // A bare command waits for input; an argument requests one immediate send.
-         if (commandPlan?.kind === 'prompt' && commandPlan.command.name === 'btw' && currentSessionId) {
+-        if (commandPlan?.kind === 'prompt' && commandPlan.command.name === 'btw' && currentSessionId) {
 -            const targetComposerId = btwSessionId ?? btwPendingComposerKey(currentSessionId);
++        if (commandPlan?.kind === 'prompt' && ['btw', 'live-btw'].includes(commandPlan.command.name) && currentSessionId) {
++            const mode = commandPlan.command.name === 'live-btw' ? 'live' as const : undefined;
++            if (mode && !nativeBtwSidebar) { toast.error(t('chat.liveBtw.unsupported')); return; }
 +            const argument = commandPlan.command.argument.trim();
 +            if (nativeBtwSidebar && !argument) {
-+                await openNativeBtwDraft('', true);
++                await openNativeBtwDraft('', true, mode);
 +                return;
 +            }
 +            const targetComposerId = !nativeBtwSidebar && btwSessionId ? btwSessionId : btwPendingComposerKey(currentSessionId);
@@ -387,7 +472,7 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
 +            if (nativeBtwSidebar) {
 +                const panelDirectory = resolveEffectiveDirectory() ?? currentSessionDirectoryForSync ?? currentDirectory;
 +                if (!panelDirectory) { toast.error(t('chat.btw.toast.createFailed')); return; }
-+                nativeBtwRequestRef.current = { parentSessionId: currentSessionId, panelDirectory, collapsed: btwPanel.collapsed };
++                nativeBtwRequestRef.current = { parentSessionId: currentSessionId, panelDirectory, collapsed: btwPanel.collapsed, mode };
 +            }
              const targetIdentity = createChatDraftIdentity(
                  activeRuntimeKey,
@@ -404,16 +489,105 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
                  useBtwStore.getState().setPanelState(currentSessionId, { collapsed: false });
                  return;
              }
-@@ -2453,7 +2532,7 @@
+@@ -2136,13 +2225,18 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+         }
+ 
+         if (sendHeldByMissingFolder()) return;
++        if (currentSessionIsLiveBtw && sessionPhase !== 'idle') {
++            toast.info(t('chat.liveBtw.wait'));
++            return;
++        }
+ 
+         // A failed send returns the typed prompt no matter WHY it failed —
+         // auth, network, server, anything. Losing a long prompt to a toast is
+         // the one outcome this handler must never produce. The mentions are
+         // snapshotted here because sending clears them before it can fail.
+         const confirmedMentionsSnapshot = new Set(confirmedMentionsRef.current);
+-        const restoreComposerText = (target: ChatDraftIdentity | null = chatDraftIdentity) => {
++        let recoveryIdentity = chatDraftIdentity;
++        const restoreComposerText = (target: ChatDraftIdentity | null = recoveryIdentity) => {
+             if (queuedOnly || !inputSnapshot.message) return;
+             restoreDraft(target, inputSnapshot.message, confirmedMentionsSnapshot);
+         };
+@@ -2340,6 +2434,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+             queuedGoal?: QueuedMessageGoal | null;
+             recordEffort?: boolean;
+             effortRevision?: number;
++            onSessionRebuilt?: (sessionId: string, directory: string) => void;
+         } | undefined;
+         if (isBtwActive && btwSessionId && btwDirectory) {
+             sendMessageOptions = {
+@@ -2420,9 +2515,33 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+         const drafts: InlineCommentDraft[] = consumedDraftTarget
+             ? consumeDrafts(consumedDraftTarget)
+             : [];
+-        const restoreConsumedDrafts = () => {
++        if (currentSessionIsLiveBtw && sendMessageOptions) {
++            sendMessageOptions.onSessionRebuilt = (sessionId, directory) => {
++                if (getRuntimeKey() !== submitRuntimeKey) throw new Error('runtime changed');
++                const identity = createChatDraftIdentity(submitRuntimeKey, directory, sessionId);
++                migrateDraft(chatDraftIdentity, identity);
++                const inputState = useInputStore.getState();
++                inputState.moveAttachedFiles(chatDraftIdentity, identity);
++                useLinkedReferenceDrafts.getState().move(chatDraftIdentity, identity);
++                if (drafts.length > 0) {
++                    useInlineCommentDraftStore.getState().restoreDrafts(
++                        { directory, sessionKey: sessionId },
++                        drafts.map((draft) => ({ ...draft, sessionKey: sessionId })),
++                    );
++                }
++                if (syntheticParts?.length) inputState.setPendingSyntheticParts(syntheticParts, sessionId);
++                recoveryIdentity = identity;
++                inputState.setPendingSessionRestore(sessionId, readChatDraft(identity).text);
++            };
++        }
++        const restoreConsumedDrafts = (identity: ChatDraftIdentity | null = recoveryIdentity) => {
+             if (consumedDraftTarget && drafts.length > 0) {
+-                useInlineCommentDraftStore.getState().restoreDrafts(consumedDraftTarget, drafts);
++                const target = currentSessionIsLiveBtw && identity?.sessionId
++                    ? { directory: identity.directory, sessionKey: identity.sessionId }
++                    : consumedDraftTarget;
++                if (target) {
++                    useInlineCommentDraftStore.getState().restoreDrafts(target, drafts.map((draft) => ({ ...draft, sessionKey: target.sessionKey })));
++                }
+             }
+         };
+         // Everything a prompt command consumed comes back if it fails: the
+@@ -2431,11 +2550,12 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+             restoreConsumedDrafts();
+             if (syntheticParts?.length) {
+                 const inputState = useInputStore.getState();
+-                inputState.setPendingSyntheticParts([...syntheticParts, ...(inputState.getPendingSyntheticParts(mailboxTarget) ?? [])], mailboxTarget);
++                const target = currentSessionIsLiveBtw ? recoveryIdentity?.sessionId ?? mailboxTarget : mailboxTarget;
++                inputState.setPendingSyntheticParts([...syntheticParts, ...(inputState.getPendingSyntheticParts(target) ?? [])], target);
+             }
+             restoreComposerText();
+             if (!queuedOnly && attachedFiles.length > 0) {
+-                useInputStore.getState().restoreAttachedFiles(attachedFiles, chatDraftIdentity);
++                useInputStore.getState().restoreAttachedFiles(attachedFiles, recoveryIdentity);
+             }
+         };
+ 
+@@ -2453,7 +2573,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
              composerAttachments: attachedFiles,
              inlineComments: expandedDrafts,
              syntheticTexts: [
 -                ...buildBtwSyntheticTexts({ isBtwActive, isPromotedBtwSession }),
-+                ...buildBtwSyntheticTexts({ isBtwActive: isBtwActive || currentSessionIsBtw, isPromotedBtwSession }),
++                ...buildBtwSyntheticTexts({ isBtwActive: isBtwActive || currentSessionIsBtw, isPromotedBtwSession, isLiveBtw: currentSessionIsLiveBtw }),
                  ...(syntheticParts?.map((part) => part.text) ?? []),
              ],
              references: isBtwActive ? [] : linkedReferences.map(toContextReference).concat(
-@@ -2593,6 +2672,8 @@
+@@ -2550,6 +2670,9 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+                         sendMessageOptions,
+                     );
+                 } catch (error) {
++                    if (error instanceof DraftSendError && error.sessionCreated) {
++                        recoveryIdentity = createChatDraftIdentity(submitRuntimeKey, error.directory, error.sessionId);
++                    }
+                     restoreConsumedInput();
+                     toast.error(getSubmitErrorMessage(error, t(command.errorToastKey)));
+                 }
+@@ -2593,6 +2716,8 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
          scrollToBottom?.();
  
          if (isBtwActive && btwPanel.pending && currentSessionId && btwComposerSessionId) {
@@ -422,17 +596,22 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
              const targetDirectory = useSessionUIStore.getState().getDirectoryForSession(currentSessionId)
                  || currentDirectory
                  || null;
-@@ -2616,6 +2697,7 @@
+@@ -2616,6 +2741,8 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
                      additionalParts,
                      skills: sendMessageOptions?.skills,
                      permissionMode: pendingBtwPermissionMode,
++                    mode: nativeOwner?.mode,
 +                    ...(nativeBtwSidebar ? { presentation: 'side' as const } : {}),
                  });
                  if (!ownsPendingBtwSend()) return;
                  if (getRuntimeKey() !== submitRuntimeKey) {
-@@ -2631,12 +2713,21 @@
+@@ -2629,14 +2756,24 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+                 useInputStore.getState().moveAttachedFiles(chatDraftIdentity, forkIdentity);
+                 if (inlineDraftTarget) {
                      const drafts = useInlineCommentDraftStore.getState();
-                     drafts.restoreDrafts({ directory: forkDirectory, sessionKey: fork.id }, drafts.consumeDrafts(inlineDraftTarget));
+-                    drafts.restoreDrafts({ directory: forkDirectory, sessionKey: fork.id }, drafts.consumeDrafts(inlineDraftTarget));
++                    drafts.restoreDrafts({ directory: forkDirectory, sessionKey: fork.id }, drafts.consumeDrafts(inlineDraftTarget)
++                        .map((draft) => ({ ...draft, sessionKey: fork.id })));
                  }
 -                useBtwStore.getState().setPanelState(currentSessionId, { pending: false, creating: false, pendingSend: undefined });
 +                if (nativeBtwSidebar) {
@@ -442,7 +621,7 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
 +                    else useBtwStore.getState().clearPanelState(currentSessionId);
 +                    if (nativeBtwRequestRef.current === nativeOwner) nativeBtwRequestRef.current = null;
 +                    useInputStore.getState().setPendingSessionRestore(fork.id, readChatDraft(forkIdentity).text);
-+                    openBtwSidePanel(fork, panelDirectory ?? targetDirectory, btwSessionTitle(primaryText));
++                    openBtwSidePanel(fork, panelDirectory ?? targetDirectory, btwSessionTitle(primaryText, nativeOwner?.mode));
 +                }
 +                else useBtwStore.getState().setPanelState(currentSessionId, { pending: false, creating: false, pendingSend: undefined });
                  // The pending composer's picks live on the fork now
@@ -454,70 +633,131 @@ diff --git a/packages/ui/src/components/chat/ChatInput.tsx b/packages/ui/src/com
                  useSelectionStore.getState().clearSessionSelections(btwComposerSessionId);
                  scrollToBottom?.();
              } catch (error) {
-diff --git a/packages/ui/src/components/chat/btw/BtwContextBanner.tsx b/packages/ui/src/components/chat/btw/BtwContextBanner.tsx
-new file mode 100644
---- /dev/null
-+++ b/packages/ui/src/components/chat/btw/BtwContextBanner.tsx
-@@ -0,0 +1,51 @@
-+import React from 'react';
-+import type { Session } from '@/lib/opencode/model';
-+import { getBtwOriginalSessionID, getBtwSnapshotAt, getBtwSourceCompletedAt, getBtwSourceMessageID, isSideBtwSession } from '@/lib/sessionBtwMetadata';
-+import { useSessionSelector } from '@/sync/sync-context';
-+import { openSessionLink } from '@/lib/router/openSessionFromRoute';
-+import { useI18n } from '@/lib/i18n';
-+import { getCurrentIntlLocale } from '@/lib/i18n/intl';
-+import { Icon } from '@/components/icon/Icon';
-+import { Button } from '@/components/ui/button';
-+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-+
-+const contextFields = (session: Session | undefined) => isSideBtwSession(session) ? {
-+    parentId: getBtwOriginalSessionID(session),
-+    messageId: getBtwSourceMessageID(session),
-+    snapshotAt: getBtwSnapshotAt(session),
-+    completedAt: getBtwSourceCompletedAt(session),
-+} : null;
-+
-+const sameContextFields = (left: ReturnType<typeof contextFields>, right: ReturnType<typeof contextFields>) =>
-+    left?.parentId === right?.parentId && left?.messageId === right?.messageId
-+    && left?.snapshotAt === right?.snapshotAt && left?.completedAt === right?.completedAt;
-+
-+export function BtwContextBanner({ sessionId, directory }: { sessionId: string | null; directory?: string }) {
-+    const { t } = useI18n();
-+    const context = useSessionSelector(sessionId, directory, contextFields, sameContextFields);
-+    if (!context?.parentId) return null;
-+    const { parentId, messageId } = context;
-+    const contextTime = context.snapshotAt ?? context.completedAt;
-+    const time = contextTime ? new Date(contextTime).toLocaleString(getCurrentIntlLocale(), {
-+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-+    }) : null;
-+
-+    return (
-+        <div data-btw-context-boundary className="flex h-8 shrink-0 items-center gap-2 px-3 typography-meta text-muted-foreground">
-+            <Icon name="git-branch" className="size-3.5 shrink-0" />
-+            <Tooltip>
-+                <TooltipTrigger asChild>
-+                    <span className="min-w-0 flex-1 truncate" tabIndex={0}>
-+                        {time ? t(context.snapshotAt ? 'chat.btw.context.createdAt' : 'chat.btw.context.snapshotAt', { time }) : t('chat.btw.context.snapshot')}
-+                        {' · '}{t('chat.btw.context.noSync')}
-+                    </span>
-+                </TooltipTrigger>
-+                <TooltipContent>{t('chat.btw.context.hint')}</TooltipContent>
-+            </Tooltip>
-+            <Button variant="ghost" size="xs" className="shrink-0"
-+                onClick={() => { void openSessionLink(parentId, messageId); }}>
-+                {t('chat.btw.context.source')}
-+            </Button>
-+        </div>
-+    );
-+}
+@@ -2675,7 +2812,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+             // had no session at all, so a mid-send session switch cannot
+             // redirect the write to an unrelated session.
+             const sessionState = useSessionUIStore.getState();
+-            const linkTargetSessionId = currentSessionId ?? sessionState.currentSessionId;
++            const linkTargetSessionId = currentSessionIsLiveBtw ? recoveryIdentity?.sessionId : currentSessionId ?? sessionState.currentSessionId;
+             const linkTargetDirectory = currentSessionId
+                 ? currentSessionDirectoryForSync ?? currentDirectory
+                 : sessionState.currentSessionDirectory
+@@ -2699,7 +2836,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+ 
+             // Clear only the draft captured by this send; newly attached references stay.
+             const sentKeys = new Set(linkedReferences.map(composerReferenceKey));
+-            updateLinkedReferencesFor(chatDraftIdentity, (current) => current.filter((reference) => !sentKeys.has(composerReferenceKey(reference))));
++            updateLinkedReferencesFor(recoveryIdentity, (current) => current.filter((reference) => !sentKeys.has(composerReferenceKey(reference))));
+         }).catch((error: unknown) => {
+             const rawMessage =
+                 error instanceof Error
+@@ -2710,7 +2847,6 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+             const normalized = rawMessage.toLowerCase();
+ 
+             console.error('Message send failed:', rawMessage || error);
+-            restoreConsumedDrafts();
+             // A first send failed. Its session exists: the text goes to that
+             // composer, below what was typed meanwhile. It does not: the draft
+             // is open again, and what was typed meanwhile goes back to it,
+@@ -2734,6 +2870,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+                 clearChatDraft(failedSessionIdentity);
+             }
+             const restoreTarget = (failedDraftSend?.sessionCreated ? failedSessionIdentity : null) ?? chatDraftIdentity;
++            restoreConsumedDrafts(restoreTarget);
+             if (failedDraftSend?.sessionCreated) {
+                 useLinkedReferenceDrafts.getState().move(chatDraftIdentity, restoreTarget);
+             }
+@@ -2815,7 +2952,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+         if (isMobileCommentOpen()) return;
+         if (pendingFirstSend) return;
+         const inputSnapshot = getCurrentInputSnapshot();
+-        const canQueue = !isBtwActive && !isPageWaiting && inputMode === 'normal' && inputSnapshot.hasContent && currentSessionId && (currentSessionPhase !== 'idle' || autoReviewRunning);
++        const canQueue = !currentSessionIsLiveBtw && !isBtwActive && !isPageWaiting && inputMode === 'normal' && inputSnapshot.hasContent && currentSessionId && (currentSessionPhase !== 'idle' || autoReviewRunning);
+         if (followUpBehavior === 'queue' && canQueue) {
+             void handleQueueMessage();
+         } else if (followUpBehavior === 'steer' && canQueue) {
+@@ -2823,7 +2960,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
+         } else {
+             void handleSubmitRef.current();
+         }
+-    }, [inputMode, getCurrentInputSnapshot, currentSessionId, currentSessionPhase, autoReviewRunning, followUpBehavior, handleQueueMessage, isBtwActive, isPageWaiting, isMobileCommentOpen, pendingFirstSend]);
++    }, [currentSessionIsLiveBtw, inputMode, getCurrentInputSnapshot, currentSessionId, currentSessionPhase, autoReviewRunning, followUpBehavior, handleQueueMessage, isBtwActive, isPageWaiting, isMobileCommentOpen, pendingFirstSend]);
+ 
+     // Draft welcome presets: submit immediately.
+     const submitPresetPrompt = React.useCallback((text: string, type: 'command' | 'skill') => {
+diff --git a/packages/ui/src/components/chat/CommandAutocomplete.tsx b/packages/ui/src/components/chat/CommandAutocomplete.tsx
+index 2a3e2e7..d8f2a7f 100644
+--- a/packages/ui/src/components/chat/CommandAutocomplete.tsx
++++ b/packages/ui/src/components/chat/CommandAutocomplete.tsx
+@@ -152,7 +152,10 @@ export const CommandAutocomplete = React.forwardRef<CommandAutocompleteHandle, C
+         : []
+       ),
+       ...(hasSession
+-        ? [{ id: 'openchamber:btw', name: 'btw', source: 'openchamber' as const, description: t('chat.commandAutocomplete.command.btwDescription'), isOpenChamber: true }]
++        ? [
++            { id: 'openchamber:btw', name: 'btw', source: 'openchamber' as const, description: t('chat.commandAutocomplete.command.btwDescription'), isOpenChamber: true },
++            { id: 'openchamber:live-btw', name: 'live-btw', source: 'openchamber' as const, description: t('chat.liveBtw.description'), isOpenChamber: true },
++          ]
+         : []
+       ),
+       ...(hasSession
+diff --git a/packages/ui/src/components/chat/chatPromptReadOnly.test.ts b/packages/ui/src/components/chat/chatPromptReadOnly.test.ts
+index 8c85ae9..8279c48 100644
+--- a/packages/ui/src/components/chat/chatPromptReadOnly.test.ts
++++ b/packages/ui/src/components/chat/chatPromptReadOnly.test.ts
+@@ -3,6 +3,7 @@ import type { Session } from '@/lib/opencode/model';
+ 
+ import { resolveChatPromptReadOnly } from './chatPromptReadOnly';
+ import { withReviewSessionMarker } from '@/lib/sessionReviewMetadata';
++import { withBtwSessionMarker } from '@/lib/sessionBtwMetadata';
+ 
+ const session = (parentID?: string): Session => ({
+     id: 'session',
+@@ -16,6 +17,13 @@ const session = (parentID?: string): Session => ({
+ });
+ 
+ describe('resolveChatPromptReadOnly', () => {
++    test('keeps ordinary BTW and live BTW editable independently of the subagent setting', () => {
++        for (const mode of [undefined, 'live'] as const) {
++            const side = { ...session('parent'), metadata: withBtwSessionMarker({}, 'main', 'boundary', 'side', { mode }) };
++            expect(resolveChatPromptReadOnly(side, false, false)).toBe(false);
++            expect(resolveChatPromptReadOnly(side, true, true)).toBe(true);
++        }
++    });
+     test('allows prompting a subagent without requiring its parent record', () => {
+         expect(resolveChatPromptReadOnly(session('parent'), true, true)).toBe(false);
+     });
+diff --git a/packages/ui/src/components/chat/chatPromptReadOnly.ts b/packages/ui/src/components/chat/chatPromptReadOnly.ts
+index 6075490..01ac28c 100644
+--- a/packages/ui/src/components/chat/chatPromptReadOnly.ts
++++ b/packages/ui/src/components/chat/chatPromptReadOnly.ts
+@@ -1,15 +1,16 @@
+ import type { Session } from '@/lib/opencode/model';
+ import { isReviewSession } from '@/lib/sessionReviewMetadata';
++import { isBtwSession } from '@/lib/sessionBtwMetadata';
+ 
+ export const resolveChatPromptReadOnly = (
+     session: Session | null | undefined,
+     allowPromptingSubagentSessions: boolean,
+     readOnly: boolean,
+ ): boolean => {
+-    // Review sessions are independent conversations even if an older server or
++    // Review and BTW sessions are independent conversations even if the server or
+     // cached record still carries parentID. Their explicit metadata is the
+     // authority; only the surface itself may make them read-only.
+-    if (isReviewSession(session)) {
++    if (isReviewSession(session) || isBtwSession(session)) {
+         return readOnly;
+     }
+ 
 diff --git a/packages/ui/src/components/chat/composer/DOCUMENTATION.md b/packages/ui/src/components/chat/composer/DOCUMENTATION.md
+index a228bb6..a3fbefd 100644
 --- a/packages/ui/src/components/chat/composer/DOCUMENTATION.md
 +++ b/packages/ui/src/components/chat/composer/DOCUMENTATION.md
-@@ -2,6 +2,71 @@
- 
+@@ -3,6 +3,103 @@
  The chat composer: the prompt language, the editor that renders it, and
  everything between typing and sending.
-+
+ 
 +On desktop and web, `/btw` opens an independent native side chat.
 +The empty command forks the server's latest history without sending a prompt.
 +Running turns and their existing progress remain available in the snapshot.
@@ -532,6 +772,38 @@ diff --git a/packages/ui/src/components/chat/composer/DOCUMENTATION.md b/package
 +The tab uses the main panel's directory even when its conversation belongs to another project.
 +Native side sessions carry `btwPresentation: 'side'` so links can reopen their own tabs.
 +Mobile and VS Code keep the floating dock.
++
++Both native BTW modes hide inherited main-session messages from their transcript.
++Only side-conversation questions and answers appear in the panel.
++
++### Live BTW context
++
++`/live-btw` opens a native side chat on desktop and desktop web.
++Mobile web, Capacitor and VS Code report that this command requires the desktop interface.
++The ordinary `/btw` command retains its fixed snapshot.
++
++Each live question captures a fresh main-session fork before delivery.
++The adapter imports that snapshot and the earlier side questions into a new native transcript.
++The earlier answers contain their final text only.
++The current turn retains native reasoning, tools and streaming until the next question.
++Each replayed question retains the main-session premise captured before its original delivery.
++Quoted context and user files remain attached to their question.
++The replay starts after the unchanged main snapshot and ends before the new question.
++Both markers are reference instructions and leave the real system instructions unchanged.
++
++The native tab keeps its root session identity and follows the root metadata's current head.
++Imported heads belong to the root, so deleting the root removes them through native child cleanup.
++Preparation failures retain the previous transcript.
++Model-send failures restore the prompt to the newly prepared transcript.
++The composer moves text and attachments typed during preparation to that transcript.
++Live questions wait until the current answer finishes.
++No background polling or automatic model calls update a live conversation.
++
++### Why live BTW imports native messages after a fresh fork
++
++OpenCode serializes the main snapshot with its own provider adapter.
++Replaying earlier side questions after that snapshot preserves the main prefix and native rendering.
++Copying a second main snapshot into the old side transcript retains stale work and duplicates context.
 +
 +New BTW sessions inherit the source composer's agent, provider, model and reasoning effort.
 +Fresh native drafts ignore saved selections from an older floating dock.
@@ -582,13 +854,15 @@ diff --git a/packages/ui/src/components/chat/composer/DOCUMENTATION.md b/package
 +
 +The user can add a question before sending the quote.
 +The draft belongs to the new side chat, so the source keeps its text and attachments.
- 
++
  `ChatInput.tsx` (one directory up) is the orchestrator. It holds the composer's
  own state and wires these modules together; it should not grow logic that
+ belongs to one of them.
 diff --git a/packages/ui/src/components/chat/composer/state/__tests__/usePendingComposerText.test.tsx b/packages/ui/src/components/chat/composer/state/__tests__/usePendingComposerText.test.tsx
+index c152a6c..2552684 100644
 --- a/packages/ui/src/components/chat/composer/state/__tests__/usePendingComposerText.test.tsx
 +++ b/packages/ui/src/components/chat/composer/state/__tests__/usePendingComposerText.test.tsx
-@@ -12,8 +12,9 @@
+@@ -12,8 +12,9 @@ import {
      type ChatColumnSession,
  } from '../../../chatColumnSession';
  import { usePendingComposerText } from '../usePendingComposerText';
@@ -599,7 +873,7 @@ diff --git a/packages/ui/src/components/chat/composer/state/__tests__/usePending
  
  function renderComposer(initial: Column) {
      const dom = installHookTestDom();
-@@ -37,7 +38,8 @@
+@@ -37,7 +38,8 @@ function renderComposer(initial: Column) {
              React.createElement(
                  ChatColumnSessionContext.Provider,
                  { value: column.session },
@@ -609,7 +883,7 @@ diff --git a/packages/ui/src/components/chat/composer/state/__tests__/usePending
              ),
          );
      }
-@@ -67,6 +69,21 @@
+@@ -67,6 +69,21 @@ afterEach(() => {
  });
  
  describe('pending composer text', () => {
@@ -632,9 +906,10 @@ diff --git a/packages/ui/src/components/chat/composer/state/__tests__/usePending
          const previous = { sessionId: 'ses_previous', directory: '/repo' };
          const composer = renderComposer({ session: previous, pinned: false });
 diff --git a/packages/ui/src/components/chat/composer/state/usePendingComposerText.ts b/packages/ui/src/components/chat/composer/state/usePendingComposerText.ts
+index 798f37b..269bbc0 100644
 --- a/packages/ui/src/components/chat/composer/state/usePendingComposerText.ts
 +++ b/packages/ui/src/components/chat/composer/state/usePendingComposerText.ts
-@@ -24,6 +24,7 @@
+@@ -24,6 +24,7 @@ import { useSessionUIStore } from '@/sync/session-ui-store';
  import { useInputStore } from '@/sync/input-store';
  import { useChatColumnActions, useChatColumnSession } from '../../chatColumnSession';
  import { appendInlineText, appendWithLineBreaks } from '../text';
@@ -642,7 +917,7 @@ diff --git a/packages/ui/src/components/chat/composer/state/usePendingComposerTe
  
  export interface PendingComposerTextOptions {
      /** Column role: null for the main chat's composer, a session id for a pinned one. */
-@@ -37,6 +38,7 @@
+@@ -37,6 +38,7 @@ export interface PendingComposerTextOptions {
  export function usePendingComposerText({ target, sessionId = null, setMessage, focus }: PendingComposerTextOptions): void {
      const column = useChatColumnSession();
      const { pinned } = useChatColumnActions();
@@ -650,7 +925,7 @@ diff --git a/packages/ui/src/components/chat/composer/state/usePendingComposerTe
      // A pinned column keeps its own session and takes only text addressed to it.
      const columnBehindSelection = useSessionUIStore((state) => (
          column !== null && !pinned && column.sessionId !== state.currentSessionId
-@@ -48,7 +50,7 @@
+@@ -48,7 +50,7 @@ export function usePendingComposerText({ target, sessionId = null, setMessage, f
      focusRef.current = focus;
  
      React.useEffect(() => {
@@ -659,17 +934,78 @@ diff --git a/packages/ui/src/components/chat/composer/state/usePendingComposerTe
          const store = useInputStore.getState();
          const restored = sessionId ? store.consumePendingSessionRestore(sessionId) : null;
          if (restored !== null) setMessage(restored);
-@@ -67,5 +69,5 @@
+@@ -67,5 +69,5 @@ export function usePendingComposerText({ target, sessionId = null, setMessage, f
              setMessage(pending.text);
          }
          setTimeout(() => focusRef.current(), 0);
 -    }, [columnBehindSelection, pendingRestore, pendingInputTarget, pendingInputText, sessionId, setMessage, target]);
 +    }, [columnBehindSelection, pendingRestore, pendingInputTarget, pendingInputText, sessionId, setMessage, target, zoneInteractive]);
  }
+diff --git a/packages/ui/src/components/chat/composer/submit/__tests__/slashCommands.test.ts b/packages/ui/src/components/chat/composer/submit/__tests__/slashCommands.test.ts
+index a667a52..fb5228b 100644
+--- a/packages/ui/src/components/chat/composer/submit/__tests__/slashCommands.test.ts
++++ b/packages/ui/src/components/chat/composer/submit/__tests__/slashCommands.test.ts
+@@ -88,6 +88,9 @@ describe('planLocalSlashCommand', () => {
+             attachedContext: 'send',
+         });
+         expect(planLocalSlashCommand('/btw why?', 'normal', true, true)?.kind).toBe('prompt');
++        expect(planLocalSlashCommand('/live-btw what changed?', 'normal', true, true)).toMatchObject({
++            kind: 'prompt', attachedContext: 'send', command: { name: 'live-btw', argument: 'what changed?' },
++        });
+     });
+ 
+     test('session actions stay on the normal send path for a new-session draft', () => {
+diff --git a/packages/ui/src/components/chat/composer/submit/slashCommands.ts b/packages/ui/src/components/chat/composer/submit/slashCommands.ts
+index 0cd4c54..2a0c27d 100644
+--- a/packages/ui/src/components/chat/composer/submit/slashCommands.ts
++++ b/packages/ui/src/components/chat/composer/submit/slashCommands.ts
+@@ -194,7 +194,7 @@ export function planLocalSlashCommand(
+         };
+     }
+ 
+-    if (command.name === 'btw' || findMagicPromptCommand(command.name)) {
++    if (command.name === 'btw' || command.name === 'live-btw' || findMagicPromptCommand(command.name)) {
+         return {
+             command,
+             kind: 'prompt',
+diff --git a/packages/ui/src/components/layout/ContextSurfacePanes.tsx b/packages/ui/src/components/layout/ContextSurfacePanes.tsx
+index 69c4409..b2bb626 100644
+--- a/packages/ui/src/components/layout/ContextSurfacePanes.tsx
++++ b/packages/ui/src/components/layout/ContextSurfacePanes.tsx
+@@ -30,7 +30,8 @@ import {
+ import { useFilesViewTabsStore } from '@/stores/useFilesViewTabsStore';
+ import { clampContextEditorTreeWidth, normalizeContextPanelDirectoryKey, useUIStore, type PendingDiffScope } from '@/stores/useUIStore';
+ import { markSessionViewed } from '@/sync/notification-store';
+-import { setExternallyViewedSession } from '@/sync/sync-context';
++import { setExternallyViewedSession, useSessionSelector } from '@/sync/sync-context';
++import { getLiveBtwHeadSessionID, getLiveBtwRootSessionID } from '@/lib/sessionBtwMetadata';
+ import { ContextPanelHeaderSlotProvider } from './contextPanelHeaderSlot';
+ import { getSessionIDFromDedupeKey } from './contextPanelSessionTitles';
+ import { MovablePane } from './MovablePane';
+@@ -444,13 +445,17 @@ export const ContextSurfacePanes: React.FC = () => {
+   }, [closeContextFile, directoryKey]);
+ 
+   const chatActiveTab = chatZone.isOpen && chatZone.activeTab?.mode === 'chat' ? chatZone.activeTab : null;
+-  const activeChatSessionID = chatActiveTab ? getSessionIDFromDedupeKey(chatActiveTab.dedupeKey) : null;
++  const activeChatAnchorSessionID = chatActiveTab ? getSessionIDFromDedupeKey(chatActiveTab.dedupeKey) : null;
+   // A chat opened from another project (or Chat) carries its own directory;
+   // tabs opened without one (subtasks, reviews) belong to this panel's.
+   const activeChatDirectory = React.useMemo(() => {
+     const own = chatActiveTab?.targetDirectory ? normalizeContextPanelDirectoryKey(chatActiveTab.targetDirectory) : '';
+     return own || directoryKey || null;
+   }, [chatActiveTab?.targetDirectory, directoryKey]);
++  const liveBtwRootSessionID = useSessionSelector(activeChatAnchorSessionID, activeChatDirectory ?? undefined, getLiveBtwRootSessionID);
++  const activeChatRootSessionID = liveBtwRootSessionID ?? activeChatAnchorSessionID;
++  const liveBtwHeadSessionID = useSessionSelector(activeChatRootSessionID, activeChatDirectory ?? undefined, getLiveBtwHeadSessionID);
++  const activeChatSessionID = liveBtwHeadSessionID ?? activeChatRootSessionID;
+   const activeChatPinnedSession = React.useMemo(
+     () => (activeChatSessionID ? { sessionId: activeChatSessionID, directory: activeChatDirectory } : null),
+     [activeChatSessionID, activeChatDirectory],
 diff --git a/packages/ui/src/components/layout/Header.tsx b/packages/ui/src/components/layout/Header.tsx
+index ca5e81f..1563c95 100644
 --- a/packages/ui/src/components/layout/Header.tsx
 +++ b/packages/ui/src/components/layout/Header.tsx
-@@ -73,6 +73,8 @@
+@@ -73,6 +73,8 @@ import { titlebarControlsWidthReaderRef } from './titlebarControlsWidth';
  import { useLayoutAnimationMs } from '@/hooks/useLayoutAnimationMs';
  import { LAYOUT_ANIMATION_EASING } from '@/lib/layoutAnimation';
  import { findWorktreeHoldingDirectory } from '@/lib/worktrees/worktreePaths';
@@ -678,7 +1014,7 @@ diff --git a/packages/ui/src/components/layout/Header.tsx b/packages/ui/src/comp
  
  // Like the icon rail: muted at rest, full strength on hover, while its menu is
  // open or while what it controls is on, and no hover fill.
-@@ -111,6 +113,7 @@
+@@ -111,6 +113,7 @@ export const Header: React.FC = () => {
  
    const isNewSessionDraftOpen = useSessionUIStore((state) => Boolean(state.newSessionDraft?.open));
    const currentSessionId = useSessionUIStore((state) => state.currentSessionId);
@@ -686,7 +1022,7 @@ diff --git a/packages/ui/src/components/layout/Header.tsx b/packages/ui/src/comp
    const currentSessionStatus = useGlobalSessionStatus(currentSessionId ?? '');
    const isCurrentSessionMovingToWorktree = useIsSessionWorktreeMovePending(currentSessionId ?? '');
    const currentGlobalSession = useGlobalSessionsStore(useShallow(React.useCallback(
-@@ -126,7 +129,7 @@
+@@ -126,7 +129,7 @@ export const Header: React.FC = () => {
          created: session.time?.created ?? null,
          slug: record.slug ?? null,
          parentId: session.parentID ?? null,
@@ -695,7 +1031,7 @@ diff --git a/packages/ui/src/components/layout/Header.tsx b/packages/ui/src/comp
        };
      },
      [currentSessionId],
-@@ -214,6 +217,7 @@
+@@ -214,6 +217,7 @@ export const Header: React.FC = () => {
    // returns the moment the panel is switched off or squeezed out.
    const shortcutOverrides = useUIStore((state) => state.shortcutOverrides);
    const renameShortcut = formatShortcutForDisplay(getEffectiveShortcutCombo('rename_current_session', shortcutOverrides), '');
@@ -703,7 +1039,7 @@ diff --git a/packages/ui/src/components/layout/Header.tsx b/packages/ui/src/comp
    const workStatusPanelVisible = useUIStore((state) => state.workStatusPanelVisible);
    const workStatusPanelEnabled = useUIStore((state) => state.workStatusPanelEnabled);
    const setWorkStatusPanelEnabled = useUIStore((state) => state.setWorkStatusPanelEnabled);
-@@ -920,6 +924,14 @@
+@@ -920,6 +924,14 @@ export const Header: React.FC = () => {
      const canMoveSession = isActive && !isVSCode && currentSession && canMoveSessionOutOf(currentSession);
      return (
        <>
@@ -718,7 +1054,7 @@ diff --git a/packages/ui/src/components/layout/Header.tsx b/packages/ui/src/comp
          <SessionMenuItemHint hint={t('sessions.sidebar.session.menuHint.rename')}>
            <Item onClick={() => { if (!isActive) select(); pendingHeaderRenameRef.current = session.id; }}>
              <Icon name="pencil-ai" className="me-1 size-4" />{t('sessions.sidebar.session.menu.rename')}
-@@ -1000,7 +1012,7 @@
+@@ -1000,7 +1012,7 @@ export const Header: React.FC = () => {
          </SessionMenuItemHint>
        </>
      );
@@ -727,7 +1063,7 @@ diff --git a/packages/ui/src/components/layout/Header.tsx b/packages/ui/src/comp
  
    const renderDesktop = () => (
      <div
-@@ -1175,6 +1187,14 @@
+@@ -1175,6 +1187,14 @@ export const Header: React.FC = () => {
                      </Button>
                    </DropdownMenuTrigger>
                    <DropdownMenuContent align="end" className="min-w-[190px]">
@@ -743,9 +1079,10 @@ diff --git a/packages/ui/src/components/layout/Header.tsx b/packages/ui/src/comp
                      <SessionAiRenameMenuItem sessionID={currentSessionId} directory={sessionDirectory} open={isHeaderSessionMenuOpen} Item={DropdownMenuItem} />
                      <SessionMenuItemHint hint={t('sessions.sidebar.session.menuHint.copyId')}><DropdownMenuItem onClick={() => currentSessionId && copySessionIdFor(currentSessionId)}><Icon name="file-copy" className="me-1 size-4" />{t('sessions.sidebar.session.menu.copyId')}</DropdownMenuItem></SessionMenuItemHint>
 diff --git a/packages/ui/src/components/layout/PluginPane.tsx b/packages/ui/src/components/layout/PluginPane.tsx
+index f6d2486..3e37624 100644
 --- a/packages/ui/src/components/layout/PluginPane.tsx
 +++ b/packages/ui/src/components/layout/PluginPane.tsx
-@@ -277,6 +277,7 @@
+@@ -277,6 +277,7 @@ export const PluginPane: React.FC<PluginPaneProps> = ({
    const pageColors = usePageColors();
    const ready = React.useMemo<HostReadyContext>(() => {
      const features: NonNullable<HostReadyContext['features']> = {};
@@ -753,7 +1090,7 @@ diff --git a/packages/ui/src/components/layout/PluginPane.tsx b/packages/ui/src/
      if (guest?.storageId && globalThis.indexedDB) features.deviceStorage = true;
      if (surface === 'status' && onStatusControls) features.statusControls = true;
      if (!popoverHost && !popover && !headless && !isVSCodeRuntime() && !isMobileSurfaceRuntime()
-@@ -722,7 +723,13 @@
+@@ -722,7 +723,13 @@ export const PluginPane: React.FC<PluginPaneProps> = ({
            if (surface !== 'status' || !onStatusControlsRef.current) throw new HostRequestError('UNSUPPORTED', 'This frame has no status header.');
            statusControls.set(controls);
          },
@@ -769,9 +1106,10 @@ diff --git a/packages/ui/src/components/layout/PluginPane.tsx b/packages/ui/src/
            // Full pause: a disabled guest must not spam host toasts while the frame tears down.
            if (!guestEnabledRef.current) return;
 diff --git a/packages/ui/src/components/ui/CommandPalette.tsx b/packages/ui/src/components/ui/CommandPalette.tsx
+index 36ebf30..aff1d3c 100644
 --- a/packages/ui/src/components/ui/CommandPalette.tsx
 +++ b/packages/ui/src/components/ui/CommandPalette.tsx
-@@ -40,6 +40,7 @@
+@@ -40,6 +40,7 @@ import {
    openNewWorktreeDialog,
    openNotes,
    openOverview,
@@ -779,7 +1117,7 @@ diff --git a/packages/ui/src/components/ui/CommandPalette.tsx b/packages/ui/src/
    openTodos,
    pinCurrentSession,
    reloadUi,
-@@ -77,6 +78,7 @@
+@@ -77,6 +78,7 @@ import { requestReasoningReveal } from '@/components/chat/search/reasoningReveal
  import { useObserveProjectActionRuns, useProjectActions } from '@/components/layout/projectActionsRunnerContext';
  import { resolveProjectActionIconName } from '@/lib/projectActions';
  import { isSessionDirectoryAdmitted } from '@/sync/session-admission-rule';
@@ -787,7 +1125,7 @@ diff --git a/packages/ui/src/components/ui/CommandPalette.tsx b/packages/ui/src/
  
  type CommandEntry = {
    id: string;
-@@ -154,6 +156,7 @@
+@@ -154,6 +156,7 @@ export const CommandPalette: React.FC = () => {
    const shortcutOverrides = useUIStore((s) => s.shortcutOverrides);
  
    const openNewSessionDraft = useSessionUIStore((s) => s.openNewSessionDraft);
@@ -795,7 +1133,7 @@ diff --git a/packages/ui/src/components/ui/CommandPalette.tsx b/packages/ui/src/
    const setCurrentSession = useSessionUIStore((s) => s.setCurrentSession);
  
    const activeSessions = useGlobalSessionsStore(React.useCallback(
-@@ -236,6 +239,14 @@
+@@ -236,6 +239,14 @@ export const CommandPalette: React.FC = () => {
    const overviewAvailable = useUIStore((state) => state.overviewFeatureAvailable);
    const commands = React.useMemo<CommandEntry[]>(() => {
      const list: CommandEntry[] = [
@@ -810,7 +1148,7 @@ diff --git a/packages/ui/src/components/ui/CommandPalette.tsx b/packages/ui/src/
        {
          id: 'new-session',
          title: t('commandPalette.item.newSession'),
-@@ -532,6 +543,7 @@
+@@ -532,6 +543,7 @@ export const CommandPalette: React.FC = () => {
      t,
      run,
      isMobile,
@@ -819,24 +1157,26 @@ diff --git a/packages/ui/src/components/ui/CommandPalette.tsx b/packages/ui/src/
      openNewSessionDraft,
      toggleSidebar,
 diff --git a/packages/ui/src/components/ui/HelpDialog.tsx b/packages/ui/src/components/ui/HelpDialog.tsx
+index c691780..feb3d2d 100644
 --- a/packages/ui/src/components/ui/HelpDialog.tsx
 +++ b/packages/ui/src/components/ui/HelpDialog.tsx
-@@ -127,6 +127,11 @@
-           id: 'new_chat',
-           descriptionKey: "helpDialog.item.createNewSession",
+@@ -129,6 +129,11 @@ export const HelpDialog: React.FC = () => {
            icon: "add",
-+          keys: '',
-+        },
+           keys: '',
+         },
 +        {
 +          id: 'open_side_chat',
 +          icon: 'chat-4',
-           keys: '',
-         },
++          keys: '',
++        },
          {
+           id: 'new_chat_worktree',
+           descriptionKey: "helpDialog.item.createNewWorktreeDraft",
 diff --git a/packages/ui/src/hooks/usePaletteShortcuts.ts b/packages/ui/src/hooks/usePaletteShortcuts.ts
+index b9fe433..d2fabdd 100644
 --- a/packages/ui/src/hooks/usePaletteShortcuts.ts
 +++ b/packages/ui/src/hooks/usePaletteShortcuts.ts
-@@ -8,6 +8,7 @@
+@@ -8,6 +8,7 @@ import {
    openNewWorktreeDialog,
    openNotes,
    openOverview,
@@ -844,7 +1184,7 @@ diff --git a/packages/ui/src/hooks/usePaletteShortcuts.ts b/packages/ui/src/hook
    openTodos,
    pinCurrentSession,
    reloadUi,
-@@ -25,6 +26,7 @@
+@@ -25,6 +26,7 @@ import {
  export function usePaletteShortcuts(): void {
    const { t } = useI18n();
    useKeybinds({
@@ -853,14 +1193,13 @@ diff --git a/packages/ui/src/hooks/usePaletteShortcuts.ts b/packages/ui/src/hook
      add_project: addProject,
      show_context_usage: showContextUsage,
 diff --git a/packages/ui/src/hooks/useRouter.test.tsx b/packages/ui/src/hooks/useRouter.test.tsx
+index 3e8e36b..17482ba 100644
 --- a/packages/ui/src/hooks/useRouter.test.tsx
 +++ b/packages/ui/src/hooks/useRouter.test.tsx
-@@ -99,6 +99,19 @@
-   // A store update after popstate must still create a fresh navigation entry.
-   await act(async () => openSession('parent'));
+@@ -101,6 +101,19 @@ test('a cold notification open replaces the fork entry and one Back returns to t
    expect(window.location.search).toBe('?session=parent');
-+});
-+
+ });
+ 
 +test('cold native side-chat resolution removes the temporary fork URL from history', async () => {
 +  const side: Session = { ...fork, metadata: { openchamber: {
 +    kind: 'btw', originalSessionID: parent.id, btwPresentation: 'side',
@@ -872,42 +1211,16 @@ diff --git a/packages/ui/src/hooks/useRouter.test.tsx b/packages/ui/src/hooks/us
 +  expect(window.location.search).toBe('?session=previous');
 +  expect(entries.some((entry) => new URL(entry).searchParams.get('session') === 'fork')).toBe(false);
 +  expect(Object.values(useUIStore.getState().contextPanelByDirectory).some((panel) => panel.tabs.some((tab) => tab.dedupeKey === 'session:fork'))).toBe(true);
- });
- 
- test('Back to an old fork URL normalizes it to the selected parent', async () => {
-diff --git a/packages/ui/src/hooks/useSideChatAvailable.ts b/packages/ui/src/hooks/useSideChatAvailable.ts
-new file mode 100644
---- /dev/null
-+++ b/packages/ui/src/hooks/useSideChatAvailable.ts
-@@ -0,0 +1,24 @@
-+import { useShallow } from 'zustand/react/shallow';
-+import { useSessionUIStore } from '@/sync/session-ui-store';
-+import { useGlobalSessionsStore } from '@/stores/useGlobalSessionsStore';
-+import { useUIStore } from '@/stores/useUIStore';
-+import { resolveChatPromptReadOnly } from '@/components/chat/chatPromptReadOnly';
-+import { useSpaceArchiveOf } from '@/lib/spaces/space-archives';
-+import { isVSCodeRuntime } from '@/lib/desktop';
-+import { isMobileSurfaceRuntime } from '@/lib/runtimeSurface';
++});
 +
-+export function useSideChatAvailable(): boolean {
-+    const sessionId = useSessionUIStore((state) => state.currentSessionId);
-+    const draftOpen = useSessionUIStore((state) => state.newSessionDraft.open);
-+    const isMobile = useUIStore((state) => state.isMobile);
-+    const allowSubagents = useUIStore((state) => state.allowPromptingSubagentSessions);
-+    const { canPrompt, directory } = useGlobalSessionsStore(useShallow((state) => {
-+        const source = sessionId ? state.entityById.get(sessionId) : undefined;
-+        return {
-+            canPrompt: Boolean(source && !resolveChatPromptReadOnly(source, allowSubagents, false)),
-+            directory: source?.directory ?? null,
-+        };
-+    }));
-+    const archive = useSpaceArchiveOf(directory);
-+    return Boolean(canPrompt && !archive && !draftOpen && !isMobile && !isVSCodeRuntime() && !isMobileSurfaceRuntime());
-+}
+ test('Back to an old fork URL normalizes it to the selected parent', async () => {
+   window.history.replaceState({}, '', '/?session=fork');
+   window.history.pushState({}, '', '/?session=previous');
 diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
+index f1cde71..47aed0a 100644
 --- a/packages/ui/src/lib/btw.test.ts
 +++ b/packages/ui/src/lib/btw.test.ts
-@@ -25,10 +25,16 @@
+@@ -25,10 +25,16 @@ const currentSessionSwitches: string[] = [];
  const metadataPatches: Array<{ sessionId: string; result: Record<string, unknown> }> = [];
  const parentSyncMessages: Message[] = [];
  const sessionMessageReads: string[] = [];
@@ -924,7 +1237,7 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
      forkSession: (sessionId: string, options?: ForkOptions) => forkSessionImpl(sessionId, options),
      getSessionMessages: (id: string, options?: { limit?: number }, directory?: string | null) => {
        sessionMessageReads.push(id);
-@@ -70,7 +76,7 @@
+@@ -70,7 +76,7 @@ mock.module('@/sync/sync-refs', () => ({
    }),
  }));
  
@@ -933,7 +1246,7 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
    await import('@/lib/btw');
  const { useBtwStore } = await import('@/stores/useBtwStore');
  const { useSelectionStore } = await import('@/sync/selection-store');
-@@ -82,7 +88,7 @@
+@@ -82,7 +88,7 @@ const makeSession = (id: string, directory?: string): Session => ({
    id,
    directory,
    title: 'btw: q',
@@ -942,7 +1255,7 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
    parentID: undefined,
    version: 1,
  }) as unknown as Session;
-@@ -94,8 +100,7 @@
+@@ -94,8 +100,7 @@ const record = (id: string, created = 1): { info: Message; parts: Part[] } => ({
    parts: [],
  });
  
@@ -952,7 +1265,7 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
  const assistantMessage = (id: string, completed?: number, finish: string | undefined = completed === undefined ? undefined : 'stop') =>
    ({ id, sessionID: 'parent-1', role: 'assistant', time: { created: 1, completed }, finish }) as Message;
  
-@@ -121,6 +126,8 @@
+@@ -121,6 +126,8 @@ beforeEach(() => {
    metadataPatches.length = 0;
    parentSyncMessages.splice(0, parentSyncMessages.length, assistantMessage('msg-finished', 10), userMessage('msg-pending'));
    sessionMessageReads.length = 0;
@@ -961,7 +1274,7 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
    writtenModes.length = 0;
    useUIStore.setState({ permissionDefaultMode: 'auto' });
    usePermissionStore.setState({ setSessionMode: async (sessionId, mode) => { writtenModes.push([sessionId, mode]); } });
-@@ -166,27 +173,61 @@
+@@ -166,27 +173,61 @@ describe('filterBtwTailMessages', () => {
    });
  });
  
@@ -1040,7 +1353,7 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
        return Promise.resolve(makeSession('fork-1', options?.directory ?? '/project'));
      };
      let sentText: unknown = null;
-@@ -211,7 +252,7 @@
+@@ -211,7 +252,7 @@ describe('startBtwSession', () => {
        target: { runtimeKey: getRuntimeKey(), sessionId: 'fork-1', directory: '/project' },
      });
      expect(metadataPatches).toEqual([
@@ -1049,7 +1362,7 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
        { sessionId: 'parent-1', result: { openchamber: { btwSessionID: 'fork-1' } } },
      ]);
      // Transient creating flag is cleared once the flow settles.
-@@ -261,111 +302,38 @@
+@@ -261,111 +302,38 @@ describe('startBtwSession', () => {
      expect(childStoreSessions.map((s) => s.id)).toEqual(['fork-1']);
    });
  
@@ -1168,19 +1481,17 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
      await startBtwSession(startInput);
 -
 -    expect(boundaries).toEqual(['msg-2']);
--  });
--
--  test('cuts before a background command result that woke the parent again', async () => {
 +    expect(boundaries).toEqual([undefined]);
 +    expect(sessionMessageReads).toEqual(['fork-1']);
 +    expect(metadataPatches[0]?.result).toMatchObject({ openchamber: { btwBoundaryMessageID: 'cloned-tool-step', btwSnapshotAt: 1000 } });
-+  });
-+
+   });
+ 
+-  test('cuts before a background command result that woke the parent again', async () => {
 +  test('includes background results that reached the parent after its last answer', async () => {
      const completion: Message = {
        id: 'msg-2',
        sessionID: 'parent-1',
-@@ -383,28 +351,7 @@
+@@ -383,28 +351,7 @@ describe('startBtwSession', () => {
  
      await startBtwSession(startInput);
  
@@ -1210,7 +1521,7 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
    });
  
    test('a persistent 404 leaves the panel retryable without creating a fork', async () => {
-@@ -416,7 +363,7 @@
+@@ -416,7 +363,7 @@ describe('startBtwSession', () => {
      };
  
      await expect(startBtwSession(startInput)).rejects.toThrow('message not found');
@@ -1219,7 +1530,7 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
      expect(metadataPatches).toEqual([]);
      expect(childStoreSessions).toEqual([]);
      expect(useBtwStore.getState().byParent['parent-1']?.creating).toBe(false);
-@@ -433,16 +380,15 @@
+@@ -433,16 +380,15 @@ describe('startBtwSession', () => {
      expect(attempts).toBe(1);
    });
  
@@ -1238,7 +1549,7 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
      });
    });
  
-@@ -491,16 +437,16 @@
+@@ -491,16 +437,16 @@ describe('startBtwSession', () => {
      ]);
    });
  
@@ -1259,7 +1570,7 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
      expect(useBtwStore.getState().byParent['parent-1']?.creating).toBe(false);
    });
  
-@@ -706,3 +652,17 @@
+@@ -706,3 +652,17 @@ test('switching runtime during snippet expansion invalidates preparation', async
    expect(await preparing).toBeNull();
    expect(useBtwStore.getState().byParent).toEqual({});
  });
@@ -1278,15 +1589,17 @@ diff --git a/packages/ui/src/lib/btw.test.ts b/packages/ui/src/lib/btw.test.ts
 +  expect(currentSessionSwitches).toEqual([]);
 +});
 diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
+index a13b4ae..04c15b2 100644
 --- a/packages/ui/src/lib/btw.ts
 +++ b/packages/ui/src/lib/btw.ts
-@@ -3,14 +3,13 @@
+@@ -3,14 +3,13 @@ import { isSpaceDirectory } from '@/lib/spaces/space-route';
  import { useUIStore } from '@/stores/useUIStore';
  import type { Message, Part, Session } from '@/lib/opencode/model';
  import { opencodeClient, type SkillMentions } from '@/lib/opencode/client';
 -import { findMessagePageItem } from '@/lib/opencode/messagePaging';
  import * as sessionActions from '@/sync/session-actions';
- import { withBtwSessionLink, withBtwSessionMarker, withoutBtwSessionLink, withoutBtwSessionMarker } from '@/lib/sessionBtwMetadata';
+-import { withBtwSessionLink, withBtwSessionMarker, withoutBtwSessionLink, withoutBtwSessionMarker } from '@/lib/sessionBtwMetadata';
++import { getBtwBoundaryMessageID, getBtwSnapshotAt, getLiveBtwRootSessionID, withBtwSessionLink, withBtwSessionMarker, withoutBtwSessionLink, withoutBtwSessionMarker } from '@/lib/sessionBtwMetadata';
  import { useBtwStore } from '@/stores/useBtwStore';
  import { useSessionUIStore } from '@/sync/session-ui-store';
  import { useSelectionStore } from '@/sync/selection-store';
@@ -1297,7 +1610,7 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
  import { Binary } from '@/sync/binary';
  import type { ContextPartMetadata } from '@/lib/messages/contextParts';
  import type { AttachedFile } from '@/stores/types/sessionTypes';
-@@ -35,9 +34,9 @@
+@@ -35,9 +34,9 @@ export const isBtwPendingComposerKey = (sessionId: string | null | undefined): b
   * reviewFlow) so the main chat's `currentSessionId` is never switched; the
   * prompt is routed to the fork with `SendMessageOptions.sessionId`.
   *
@@ -1310,14 +1623,15 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
   */
  export type StartBtwInput = {
    parentSessionId: string;
-@@ -59,7 +58,38 @@
+@@ -59,8 +58,40 @@ export type StartBtwInput = {
    }>;
    /** Skills the question names inline, attached to its prompt. */
    skills?: SkillMentions;
 +  /** A side session has no parent dock. The caller restores its draft before opening its tab. */
 +  presentation?: 'side';
++  mode?: 'live';
  };
-+
+ 
 +/** Appended once after the cloned history. Keep this text independent of session identity. */
 +export const BTW_HISTORY_BOUNDARY = `Side conversation boundary.
 +
@@ -1346,10 +1660,11 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
 +If a request requires changes, describe the changes for the main chat.
 +Do not execute those changes in this side conversation.
 +An edit request inside BTW does not lift these restrictions.`;
- 
++
  /**
   * Sent as a synthetic part with every message inside a btw session.
-@@ -80,10 +110,12 @@
+  *
+@@ -80,10 +111,12 @@ export type StartBtwInput = {
  export const BTW_BOUNDARY_INSTRUCTION = [
    'You are in a btw session, a side conversation forked from a main thread.',
    'The history inherited from the parent thread is reference context only. It is not your current task.',
@@ -1363,7 +1678,17 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
  ].join('\n');
  
  /**
-@@ -126,33 +158,14 @@
+@@ -117,7 +150,9 @@ export const BTW_PROMOTION_NOTICE =
+ export const buildBtwSyntheticTexts = (state: {
+   isBtwActive: boolean;
+   isPromotedBtwSession: boolean;
++  isLiveBtw?: boolean;
+ }): string[] => {
++  if (state.isLiveBtw) return [];
+   if (state.isBtwActive) return [BTW_BOUNDARY_INSTRUCTION];
+   return state.isPromotedBtwSession ? [BTW_PROMOTION_NOTICE] : [];
+ };
+@@ -126,39 +161,25 @@ export const buildBtwSyntheticTexts = (state: {
  const btwBoundaryParts = (): Array<{ text: string; synthetic: true }> =>
    [{ text: BTW_BOUNDARY_INSTRUCTION, synthetic: true }];
  
@@ -1388,28 +1713,37 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
 -    if (message.time.completed !== undefined && message.finish === 'stop') return message.id;
 -  }
 -  return null;
-+export const btwSessionTitle = (question: string): string => question.trim() ? `btw: ${question}` : 'btw';
-+
-+export const openBtwSidePanel = (session: Session, panelDirectory: string, title = session.title || 'btw'): void => {
-+  useUIStore.getState().openContextPanelTab(panelDirectory, {
-+    mode: 'chat', dedupeKey: `session:${session.id}`, label: title,
-+    sessionTitleFallback: title, targetDirectory: session.directory ?? panelDirectory,
-+  });
++export const btwSessionTitle = (question: string, mode?: 'live'): string => {
++  const name = mode === 'live' ? 'live-btw' : 'btw';
++  return question.trim() ? `${name}: ${question}` : name;
  };
--
+ 
 -export const btwSessionTitle = (question: string): string => `btw: ${question}`;
 -
 -/** An idle parent's answer sits right behind its `idle` record, so one short page usually holds it. */
 -const SERVER_TAIL_PAGE_SIZE = 10;
++export const openBtwSidePanel = (session: Session, panelDirectory: string, title = session.title || 'btw'): void => {
++  const rootSessionID = getLiveBtwRootSessionID(session) ?? session.id;
++  const label = rootSessionID === session.id ? title : 'live-btw';
++  useUIStore.getState().openContextPanelTab(panelDirectory, {
++    mode: 'chat', dedupeKey: `session:${rootSessionID}`, label,
++    sessionTitleFallback: label, targetDirectory: session.directory ?? panelDirectory,
++  });
++};
  
  /**
   * Insert the fork into its directory child store so the sidebar picks it up
-@@ -172,28 +185,6 @@
-     sessions.splice(searchResult.index, 0, session);
-     store.setState({ session: sessions });
+  * immediately, mirroring `forkFromMessage` in session-actions.
+  */
+-function insertForkIntoDirectoryStore(session: Session, directory: string): void {
++export function insertForkIntoDirectoryStore(session: Session, directory: string): void {
+   // `getChild` normalizes the key: OpenCode returns native Windows paths
+   // (`C:\repo`) while child stores are keyed by `C:/repo`. OpenCode 2.x
+   // publishes no `session.created` for a fork, so a missed insert here leaves
+@@ -174,28 +195,6 @@ function insertForkIntoDirectoryStore(session: Session, directory: string): void
    }
--}
--
+ }
+ 
 -/**
 - * The cut after `answerID` as the server sees it, for a parent that looks idle
 - * here. The server can already hold a turn this window has not received, and
@@ -1430,10 +1764,12 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
 -  }, { limit: SERVER_TAIL_PAGE_SIZE }, directory);
 -  if (!answer) throw new Error('No safe transcript boundary to fork from');
 -  return transcriptCutAfterMessage([answer.info, ...newestFirst.reverse()], answerID);
- }
- 
+-}
+-
  /** Preparation can be discarded until the server-side fork starts. */
-@@ -226,23 +217,17 @@
+ export async function preparePendingBtwSend(
+   parentSessionId: string,
+@@ -226,23 +225,21 @@ export async function preparePendingBtwSend(
  
  export async function startBtwSession(input: StartBtwInput): Promise<Session> {
    const { setPanelState } = useBtwStore.getState();
@@ -1457,11 +1793,15 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
 -      ?? await serverCutAfterAnswer(input.parentSessionId, forkPointMessageID, input.directory);
 -    const forked = await forkAtTranscriptCut(input.parentSessionId, before, input.directory, expectedRuntimeKey);
 +    // Let OpenCode snapshot its latest history, including progress in a running turn.
-+    const forked = await forkAtTranscriptCut(input.parentSessionId, undefined, input.directory, expectedRuntimeKey);
++    const forked = input.mode === 'live'
++      ? await (await import('./liveBtw')).createLiveBtwSnapshot({
++        parentSessionId: input.parentSessionId, directory: input.directory, expectedRuntimeKey,
++      })
++      : await forkAtTranscriptCut(input.parentSessionId, undefined, input.directory, expectedRuntimeKey);
  
      // The server may canonicalize the worktree path; the prompt must use the
      // same directory identity as the forked session.
-@@ -273,13 +258,7 @@
+@@ -273,13 +270,8 @@ export async function startBtwSession(input: StartBtwInput): Promise<Session> {
        }
        // Locate the inherited-history boundary by identity, not by ID ordering.
        const newestCloned = await opencodeClient.getSessionMessages(forked.id, { limit: 1 }, sessionDirectory);
@@ -1472,19 +1812,21 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
 -      const boundaryMessageID = newestCloned.items[newestCloned.items.length - 1]?.info.id
 -        ?? forkPointMessageID
 -        ?? null;
-+      const boundaryMessageID = newestCloned.items[newestCloned.items.length - 1]?.info.id ?? null;
++      const boundaryMessageID = input.mode === 'live' ? getBtwBoundaryMessageID(forked)
++        : newestCloned.items[newestCloned.items.length - 1]?.info.id ?? null;
  
        // The fork inherits the parent's metadata and title wholesale: replace
        // the metadata with the btw marker, and rename it (rename is
-@@ -288,7 +267,17 @@
+@@ -288,46 +280,62 @@ export async function startBtwSession(input: StartBtwInput): Promise<Session> {
        // forks are hidden from session lists by this marker, so inserting an
        // unmarked fork first would flash it in the sidebar.
        const marked = await sessionActions.patchSessionMetadata(forked.id, sessionDirectory, (metadata) =>
 -        withBtwSessionMarker(metadata, input.parentSessionId, boundaryMessageID), expectedRuntimeKey);
 +        withBtwSessionMarker(metadata, input.parentSessionId, boundaryMessageID, input.presentation, {
-+          snapshotAt: forked.time.created,
++          snapshotAt: getBtwSnapshotAt(forked) ?? forked.time.created,
++          ...(input.mode === 'live' ? { mode: 'live' as const, liveRootSessionID: forked.id } : {}),
 +        }), expectedRuntimeKey);
-+      await opencodeClient.addSessionNote({
++      if (input.mode !== 'live') await opencodeClient.addSessionNote({
 +        runtimeKey: expectedRuntimeKey,
 +        sessionId: forked.id,
 +        directory: sessionDirectory,
@@ -1495,7 +1837,11 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
        // patchSessionMetadata already upserted the marked fork into the global
        // store; the directory child store still needs the explicit insert.
        insertForkIntoDirectoryStore(marked, sessionDirectory);
-@@ -299,35 +288,39 @@
+-      void sessionActions.updateSessionTitle(forked.id, btwSessionTitle(input.question), {
++      void sessionActions.updateSessionTitle(forked.id, btwSessionTitle(input.question, input.mode), {
+         directory: sessionDirectory,
+         expectedRuntimeKey,
+       }).catch(() => undefined);
  
        // Link the parent before sending so the panel opens as soon as the
        // metadata lands; the question streams into it.
@@ -1536,7 +1882,7 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
 +            input.attachments ?? [],
 +            undefined,
 +            // The reminder stays position-independent on later side-chat turns.
-+            [...btwBoundaryParts(), ...(input.additionalParts ?? [])],
++            [...(input.mode === 'live' ? [] : btwBoundaryParts()), ...(input.additionalParts ?? [])],
 +            input.variant ?? undefined,
 +            'normal',
 +            {
@@ -1544,6 +1890,7 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
 +              sessionId: forked.id,
 +              directory: sessionDirectory,
 +              skills: input.skills,
++              liveBtwPrepared: input.mode === 'live',
 +            },
 +          );
 +        }
@@ -1559,7 +1906,7 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
          throw error;
        }
      } catch (error) {
-@@ -336,7 +329,7 @@
+@@ -336,7 +344,7 @@ export async function startBtwSession(input: StartBtwInput): Promise<Session> {
      }
      return forked;
    } finally {
@@ -1569,9 +1916,10 @@ diff --git a/packages/ui/src/lib/btw.ts b/packages/ui/src/lib/btw.ts
  }
  
 diff --git a/packages/ui/src/lib/guests/host-bridge.test.ts b/packages/ui/src/lib/guests/host-bridge.test.ts
+index 54b5cb5..656ac8e 100644
 --- a/packages/ui/src/lib/guests/host-bridge.test.ts
 +++ b/packages/ui/src/lib/guests/host-bridge.test.ts
-@@ -59,6 +59,15 @@
+@@ -59,6 +59,15 @@ const effects = (overrides: Partial<BridgeEffects> = {}): BridgeEffects => ({
  });
  
  describe('answerGuestMessage', () => {
@@ -1588,9 +1936,10 @@ diff --git a/packages/ui/src/lib/guests/host-bridge.test.ts b/packages/ui/src/li
      const controls: GuestStatusControl[] = [{ kind: 'button', id: 'refresh', label: 'Refresh' }];
      const seen: GuestStatusControl[][] = [];
 diff --git a/packages/ui/src/lib/guests/host-bridge.ts b/packages/ui/src/lib/guests/host-bridge.ts
+index cb422bd..0b2e96f 100644
 --- a/packages/ui/src/lib/guests/host-bridge.ts
 +++ b/packages/ui/src/lib/guests/host-bridge.ts
-@@ -56,7 +56,7 @@
+@@ -56,7 +56,7 @@ type HostBridgeEffects = {
    shellStop: (request: { shellId: string }) => Promise<GuestShellStopResult>;
    storage: (request: GuestStorageRequest) => Promise<GuestStorageResult>;
    setStatusControls: (controls: GuestStatusControl[]) => void;
@@ -1599,7 +1948,7 @@ diff --git a/packages/ui/src/lib/guests/host-bridge.ts b/packages/ui/src/lib/gue
    toast: (request: ToastRequest) => void;
    openUrl: (url: string) => Promise<boolean>;
    /** Open a context panel surface; the pane owns directory and runtime support. */
-@@ -276,7 +276,7 @@
+@@ -276,7 +276,7 @@ export const answerGuestMessage = async (
      case 'shell-stop': return okResult(message.id, await effects.shellStop(message.payload));
      case 'storage': return okResult(message.id, await effects.storage(message.payload));
      case 'status-controls': effects.setStatusControls(message.payload.controls); return okResult(message.id);
@@ -1609,9 +1958,10 @@ diff --git a/packages/ui/src/lib/guests/host-bridge.ts b/packages/ui/src/lib/gue
      // its file channel, not to a request/result pair.
      case 'hello':
 diff --git a/packages/ui/src/lib/guests/workspace.test.ts b/packages/ui/src/lib/guests/workspace.test.ts
+index 03330e9..5ef5181 100644
 --- a/packages/ui/src/lib/guests/workspace.test.ts
 +++ b/packages/ui/src/lib/guests/workspace.test.ts
-@@ -10,7 +10,7 @@
+@@ -10,7 +10,7 @@ import { setSyncRefs } from '@/sync/sync-refs';
  import { createRuntimeOpencodeClient } from '@/lib/opencode/client';
  import { applyGlobalSessionStatusEvent, replaceGlobalSessionStatusById } from '@/sync/global-session-status';
  import { applySessionEventToGlobalSessions } from '@/sync/session-event-router';
@@ -1620,7 +1970,7 @@ diff --git a/packages/ui/src/lib/guests/workspace.test.ts b/packages/ui/src/lib/
  import { guestMay } from './capabilities';
  
  const session = (id: string, directory: string): Session => ({
-@@ -39,6 +39,32 @@
+@@ -39,6 +39,32 @@ const readB = () => {
    return snapshot;
  };
  describe('extension workspace projection', () => {
@@ -1654,9 +2004,10 @@ diff --git a/packages/ui/src/lib/guests/workspace.test.ts b/packages/ui/src/lib/
      expect(guestMay({ id: 'board', name: 'Board', icon: 'window', enabled: false,
        capabilities: { requested: ['sessions'], granted: ['sessions'] } }, 'sessions')).toBe(false);
 diff --git a/packages/ui/src/lib/guests/workspace.ts b/packages/ui/src/lib/guests/workspace.ts
+index 48510e4..964404c 100644
 --- a/packages/ui/src/lib/guests/workspace.ts
 +++ b/packages/ui/src/lib/guests/workspace.ts
-@@ -5,6 +5,7 @@
+@@ -5,6 +5,7 @@ import { useGlobalSessionsStore } from '@/stores/useGlobalSessionsStore';
  import { useConfigStore } from '@/stores/useConfigStore';
  import { useSessionUIStore } from '@/sync/session-ui-store';
  import { useGlobalSessionStatusStore } from '@/sync/global-session-status';
@@ -1664,7 +2015,7 @@ diff --git a/packages/ui/src/lib/guests/workspace.ts b/packages/ui/src/lib/guest
  import { getAllSyncSessionMap, getDirectoryState, getSyncChildStores } from '@/sync/sync-refs';
  import { getLinkedIssues, isLinkedChange } from '@/lib/linkedIssues';
  import { normalizePath } from '@/lib/pathNormalization';
-@@ -186,9 +187,27 @@
+@@ -186,9 +187,27 @@ export const observeGuestWorkspace = (query: GuestWorkspaceQuery, guestId: strin
    return () => { current.listeners.delete(listener); if (current.listeners.size === 0) current.dispose(); };
  };
  
@@ -1694,9 +2045,10 @@ diff --git a/packages/ui/src/lib/guests/workspace.ts b/packages/ui/src/lib/guest
    useUIStore.getState().closeMainSurfaces();
  };
 diff --git a/packages/ui/src/lib/i18n/messages/ar.ts b/packages/ui/src/lib/i18n/messages/ar.ts
+index 6e41b01..6b2b728 100644
 --- a/packages/ui/src/lib/i18n/messages/ar.ts
 +++ b/packages/ui/src/lib/i18n/messages/ar.ts
-@@ -66,6 +66,15 @@
+@@ -66,6 +66,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict = {
@@ -1708,11 +2060,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/ar.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': 'بلا مزامنة تلقائية',
 +  'chat.btw.context.hint': 'تستخدم هذه المحادثة لقطة المحادثة الرئيسية الموضحة هنا. لا تتزامن الرسائل اللاحقة تلقائيًا. المهام الموروثة مرجع فقط.',
 +  'chat.btw.context.source': 'عرض المصدر',
++  'chat.liveBtw.description': 'اطرح سؤالًا جانبيًا باستخدام أحدث سياق للمحادثة الرئيسية.',
++  'chat.liveBtw.unsupported': 'تتطلب المحادثات الجانبية المباشرة تطبيق سطح المكتب أو واجهة الويب لسطح المكتب.',
++  'chat.liveBtw.wait': 'انتظر اكتمال الإجابة الحالية في المحادثة الجانبية المباشرة قبل إرسال سؤال جديد.',
++  'chat.liveBtw.context.refresh': 'تحديث قبل كل سؤال',
++  'chat.liveBtw.context.hint': 'يستخدم كل سؤال لقطة جديدة للمحادثة الرئيسية. تحتفظ الأسئلة الجانبية السابقة بمعطياتها الأصلية.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': 'محادثة جانبية جديدة',
    'quota.family.zen': 'نماذج Zen',
    'quota.value.requests': 'الطلبات: {count}',
    'quota.value.spent': 'تم إنفاق {spent}',
-@@ -2531,8 +2540,8 @@
+@@ -2531,8 +2545,8 @@ export const dict = {
    'chat.textSelection.actions.read': 'قراءة',
    'chat.textSelection.actions.stopReading': 'إيقاف',
    'chat.textSelection.actions.comment': 'تعليق',
@@ -1724,9 +2081,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/ar.ts b/packages/ui/src/lib/i18n/
    'chat.textSelection.comment.placeholder': 'أضف تعليقًا اختياريًا…',
    'chat.textSelection.comment.attach': 'إرفاق',
 diff --git a/packages/ui/src/lib/i18n/messages/de.ts b/packages/ui/src/lib/i18n/messages/de.ts
+index eb944ae..f0de90d 100644
 --- a/packages/ui/src/lib/i18n/messages/de.ts
 +++ b/packages/ui/src/lib/i18n/messages/de.ts
-@@ -66,6 +66,15 @@
+@@ -66,6 +66,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict = {
@@ -1738,11 +2096,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/de.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': 'Keine automatische Synchronisierung',
 +  'chat.btw.context.hint': 'Dieser Nebenchat verwendet die hier angezeigte Momentaufnahme des Hauptchats. Spätere Nachrichten werden nicht automatisch synchronisiert. Übernommene Aufgaben dienen nur als Referenz.',
 +  'chat.btw.context.source': 'Quelle ansehen',
++  'chat.liveBtw.description': 'Eine Nebenfrage mit dem neuesten Kontext des Hauptchats stellen.',
++  'chat.liveBtw.unsupported': 'Live-Nebenchats erfordern die Desktop-App oder die Desktop-Weboberfläche.',
++  'chat.liveBtw.wait': 'Warte auf die aktuelle Antwort im Live-Nebenchat, bevor du eine weitere Frage sendest.',
++  'chat.liveBtw.context.refresh': 'Aktualisierung vor jeder Frage',
++  'chat.liveBtw.context.hint': 'Jede Frage verwendet einen neuen Stand des Hauptchats. Frühere Nebenfragen behalten ihre ursprünglichen Voraussetzungen.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': 'Neuer Nebenchat',
    'quota.family.zen': 'Zen-Modelle',
    'quota.value.requests': 'Anfragen: {count}',
    'quota.value.spent': '{spent} ausgegeben',
-@@ -2338,8 +2347,8 @@
+@@ -2338,8 +2352,8 @@ export const dict = {
    'chat.textSelection.actions.read': 'Vorlesen',
    'chat.textSelection.actions.stopReading': 'Stopp',
    'chat.textSelection.actions.comment': 'Kommentieren',
@@ -1754,9 +2117,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/de.ts b/packages/ui/src/lib/i18n/
    'chat.textSelection.comment.placeholder': 'Optionalen Kommentar hinzufügen...',
    'chat.textSelection.comment.attach': 'Anhängen',
 diff --git a/packages/ui/src/lib/i18n/messages/en.ts b/packages/ui/src/lib/i18n/messages/en.ts
+index f213578..3d27f2c 100644
 --- a/packages/ui/src/lib/i18n/messages/en.ts
 +++ b/packages/ui/src/lib/i18n/messages/en.ts
-@@ -66,6 +66,15 @@
+@@ -66,6 +66,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict = {
@@ -1768,11 +2132,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/en.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': 'No automatic sync',
 +  'chat.btw.context.hint': 'This side chat uses the main-chat snapshot shown here. Later messages do not sync automatically. Inherited tasks are reference only.',
 +  'chat.btw.context.source': 'View source',
++  'chat.liveBtw.description': 'Ask a side question with the latest main-chat context.',
++  'chat.liveBtw.unsupported': 'Live side chats require the desktop app or desktop web interface.',
++  'chat.liveBtw.wait': 'Wait for the current live side-chat answer before sending another question.',
++  'chat.liveBtw.context.refresh': 'Updates before each question',
++  'chat.liveBtw.context.hint': 'Each question uses a fresh main-chat snapshot. Earlier side questions keep their original premises.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': 'New side chat',
    'quota.family.zen': 'Zen Models',
    'quota.value.requests': 'Requests: {count}',
    'quota.value.spent': '{spent} spent',
-@@ -2621,8 +2630,8 @@
+@@ -2621,8 +2635,8 @@ export const dict = {
    'chat.textSelection.actions.read': 'Read',
    'chat.textSelection.actions.stopReading': 'Stop',
    'chat.textSelection.actions.comment': 'Comment',
@@ -1784,9 +2153,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/en.ts b/packages/ui/src/lib/i18n/
    'chat.textSelection.comment.placeholder': 'Add an optional comment...',
    'chat.textSelection.comment.attach': 'Attach',
 diff --git a/packages/ui/src/lib/i18n/messages/es.ts b/packages/ui/src/lib/i18n/messages/es.ts
+index 46fc2c7..9d92b56 100644
 --- a/packages/ui/src/lib/i18n/messages/es.ts
 +++ b/packages/ui/src/lib/i18n/messages/es.ts
-@@ -67,6 +67,15 @@
+@@ -67,6 +67,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict: Record<I18nKey, string> = {
@@ -1798,11 +2168,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/es.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': 'Sin sincronización automática',
 +  'chat.btw.context.hint': 'Esta conversación usa la instantánea de la conversación principal indicada aquí. Los mensajes posteriores no se sincronizan automáticamente. Las tareas heredadas son solo una referencia.',
 +  'chat.btw.context.source': 'Ver origen',
++  'chat.liveBtw.description': 'Haz una pregunta paralela con el contexto más reciente del chat principal.',
++  'chat.liveBtw.unsupported': 'Los chats paralelos en directo requieren la aplicación de escritorio o la interfaz web de escritorio.',
++  'chat.liveBtw.wait': 'Espera a que termine la respuesta del chat paralelo en directo antes de enviar otra pregunta.',
++  'chat.liveBtw.context.refresh': 'Se actualiza antes de cada pregunta',
++  'chat.liveBtw.context.hint': 'Cada pregunta usa una nueva instantánea del chat principal. Las preguntas paralelas anteriores conservan sus premisas originales.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': 'Nueva conversación lateral',
    'quota.family.zen': 'Modelos Zen',
    'quota.value.requests': 'Solicitudes: {count}',
    'quota.value.spent': '{spent} gastados',
-@@ -2589,8 +2598,8 @@
+@@ -2589,8 +2603,8 @@ export const dict: Record<I18nKey, string> = {
    "chat.textSelection.actions.read": "Leer",
    "chat.textSelection.actions.stopReading": "Detener",
    "chat.textSelection.actions.comment": "Comentar",
@@ -1814,9 +2189,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/es.ts b/packages/ui/src/lib/i18n/
    "chat.textSelection.comment.placeholder": "Añade un comentario opcional...",
    "chat.textSelection.comment.attach": "Adjuntar",
 diff --git a/packages/ui/src/lib/i18n/messages/fr.ts b/packages/ui/src/lib/i18n/messages/fr.ts
+index 6f57daf..cc19bcd 100644
 --- a/packages/ui/src/lib/i18n/messages/fr.ts
 +++ b/packages/ui/src/lib/i18n/messages/fr.ts
-@@ -66,6 +66,15 @@
+@@ -66,6 +66,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict = {
@@ -1828,11 +2204,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/fr.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': 'Sans synchronisation automatique',
 +  'chat.btw.context.hint': "Cette discussion utilise l'instantané de la discussion principale indiqué ici. Les messages suivants ne sont pas synchronisés automatiquement. Les tâches héritées servent uniquement de référence.",
 +  'chat.btw.context.source': 'Voir la source',
++  'chat.liveBtw.description': 'Poser une question parallèle avec le contexte le plus récent du chat principal.',
++  'chat.liveBtw.unsupported': 'Les chats parallèles en direct nécessitent l’application de bureau ou l’interface web de bureau.',
++  'chat.liveBtw.wait': 'Attendez la fin de la réponse du chat parallèle en direct avant d’envoyer une nouvelle question.',
++  'chat.liveBtw.context.refresh': 'Actualisation avant chaque question',
++  'chat.liveBtw.context.hint': 'Chaque question utilise un nouvel instantané du chat principal. Les anciennes questions parallèles conservent leurs prémisses initiales.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': 'Nouvelle discussion annexe',
    'quota.family.zen': 'Modèles Zen',
    'quota.value.requests': 'Requêtes : {count}',
    'quota.value.spent': '{spent} dépensés',
-@@ -2333,8 +2342,8 @@
+@@ -2333,8 +2347,8 @@ export const dict = {
    'chat.textSelection.actions.read': 'Lire',
    'chat.textSelection.actions.stopReading': 'Arrêter',
    'chat.textSelection.actions.comment': 'Commenter',
@@ -1844,9 +2225,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/fr.ts b/packages/ui/src/lib/i18n/
    'chat.textSelection.comment.placeholder': 'Ajouter un commentaire facultatif...',
    'chat.textSelection.comment.attach': 'Joindre',
 diff --git a/packages/ui/src/lib/i18n/messages/he.ts b/packages/ui/src/lib/i18n/messages/he.ts
+index 995c02a..4aa405e 100644
 --- a/packages/ui/src/lib/i18n/messages/he.ts
 +++ b/packages/ui/src/lib/i18n/messages/he.ts
-@@ -66,6 +66,15 @@
+@@ -66,6 +66,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict = {
@@ -1858,11 +2240,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/he.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': 'ללא סנכרון אוטומטי',
 +  'chat.btw.context.hint': 'שיחה זו משתמשת בתמונת המצב של השיחה הראשית המוצגת כאן. הודעות מאוחרות יותר אינן מסתנכרנות אוטומטית. משימות שעברו בירושה הן לעיון בלבד.',
 +  'chat.btw.context.source': 'הצגת המקור',
++  'chat.liveBtw.description': 'שאלת שאלה צדדית עם ההקשר העדכני ביותר של השיחה הראשית.',
++  'chat.liveBtw.unsupported': 'שיחות צד בזמן אמת דורשות את יישום שולחן העבודה או את ממשק האינטרנט למחשב.',
++  'chat.liveBtw.wait': 'יש להמתין לסיום התשובה הנוכחית בשיחת הצד בזמן אמת לפני שליחת שאלה נוספת.',
++  'chat.liveBtw.context.refresh': 'מתעדכן לפני כל שאלה',
++  'chat.liveBtw.context.hint': 'כל שאלה משתמשת בתמונת מצב חדשה של השיחה הראשית. שאלות צד קודמות שומרות על ההנחות המקוריות שלהן.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': 'שיחת צד חדשה',
    'quota.family.zen': 'מודלי Zen',
    'quota.value.requests': 'בקשות: {count}',
    'quota.value.spent': 'נוצלו {spent}',
-@@ -2531,8 +2540,8 @@
+@@ -2531,8 +2545,8 @@ export const dict = {
    'chat.textSelection.actions.read': 'הקרא',
    'chat.textSelection.actions.stopReading': 'עצור',
    'chat.textSelection.actions.comment': 'הגב',
@@ -1874,9 +2261,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/he.ts b/packages/ui/src/lib/i18n/
    'chat.textSelection.comment.placeholder': 'אפשר להוסיף תגובה…',
    'chat.textSelection.comment.attach': 'צרף',
 diff --git a/packages/ui/src/lib/i18n/messages/ja.ts b/packages/ui/src/lib/i18n/messages/ja.ts
+index 0a33836..f5aeaed 100644
 --- a/packages/ui/src/lib/i18n/messages/ja.ts
 +++ b/packages/ui/src/lib/i18n/messages/ja.ts
-@@ -67,6 +67,15 @@
+@@ -67,6 +67,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict: Record<I18nKey, string> = {
@@ -1888,11 +2276,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/ja.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': '自動同期なし',
 +  'chat.btw.context.hint': 'ここに示すメインチャットのスナップショットを使います。その後のメッセージは自動同期されません。引き継いだタスクは参考情報です。',
 +  'chat.btw.context.source': '参照元を表示',
++  'chat.liveBtw.description': 'メインチャットの最新のコンテキストでサイド質問をします。',
++  'chat.liveBtw.unsupported': 'ライブサイドチャットにはデスクトップアプリまたはデスクトップ向けウェブ画面が必要です。',
++  'chat.liveBtw.wait': '現在のライブサイドチャットの回答が終わってから次の質問を送信してください。',
++  'chat.liveBtw.context.refresh': '質問の送信前に更新',
++  'chat.liveBtw.context.hint': '各質問にはメインチャットの最新スナップショットを使用します。過去のサイド質問は当時の前提を保持します。',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': '新しいサイドチャット',
    'quota.family.zen': 'Zen モデル',
    'quota.value.requests': 'リクエスト数: {count}',
    'quota.value.spent': '{spent} 使用済み',
-@@ -2617,8 +2626,8 @@
+@@ -2617,8 +2631,8 @@ export const dict: Record<I18nKey, string> = {
    'chat.textSelection.actions.read': '読み上げ',
    'chat.textSelection.actions.stopReading': '停止',
    'chat.textSelection.actions.comment': 'コメント',
@@ -1904,9 +2297,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/ja.ts b/packages/ui/src/lib/i18n/
    'chat.textSelection.comment.placeholder': '任意のコメントを追加...',
    'chat.textSelection.comment.attach': '添付',
 diff --git a/packages/ui/src/lib/i18n/messages/ko.ts b/packages/ui/src/lib/i18n/messages/ko.ts
+index 90ed95d..0d826d9 100644
 --- a/packages/ui/src/lib/i18n/messages/ko.ts
 +++ b/packages/ui/src/lib/i18n/messages/ko.ts
-@@ -67,6 +67,15 @@
+@@ -67,6 +67,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict: Record<I18nKey, string> = {
@@ -1918,11 +2312,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/ko.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': '자동 동기화 안 함',
 +  'chat.btw.context.hint': '여기에 표시된 기본 채팅의 스냅샷을 사용합니다. 이후 메시지는 자동으로 동기화되지 않습니다. 상속한 작업은 참고용입니다.',
 +  'chat.btw.context.source': '원본 보기',
++  'chat.liveBtw.description': '주 채팅의 최신 맥락으로 별도 질문을 합니다.',
++  'chat.liveBtw.unsupported': '실시간 보조 채팅은 데스크톱 앱 또는 데스크톱 웹 화면이 필요합니다.',
++  'chat.liveBtw.wait': '현재 실시간 보조 채팅의 답변이 끝난 후 새 질문을 보내세요.',
++  'chat.liveBtw.context.refresh': '질문을 보낼 때마다 갱신',
++  'chat.liveBtw.context.hint': '각 질문은 주 채팅의 최신 스냅샷을 사용합니다. 이전 보조 질문은 당시의 전제를 유지합니다.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': '새 사이드 채팅',
    'quota.family.zen': 'Zen 모델',
    'quota.value.requests': '요청: {count}',
    'quota.value.spent': '{spent} 사용',
-@@ -2621,8 +2630,8 @@
+@@ -2621,8 +2635,8 @@ export const dict: Record<I18nKey, string> = {
    'chat.textSelection.actions.read': '읽기',
    'chat.textSelection.actions.stopReading': '중지',
    'chat.textSelection.actions.comment': '댓글',
@@ -1934,9 +2333,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/ko.ts b/packages/ui/src/lib/i18n/
    'chat.textSelection.comment.placeholder': '선택적 댓글 추가...',
    'chat.textSelection.comment.attach': '첨부',
 diff --git a/packages/ui/src/lib/i18n/messages/nl.ts b/packages/ui/src/lib/i18n/messages/nl.ts
+index 4e4ceed..4e99788 100644
 --- a/packages/ui/src/lib/i18n/messages/nl.ts
 +++ b/packages/ui/src/lib/i18n/messages/nl.ts
-@@ -66,6 +66,15 @@
+@@ -66,6 +66,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict = {
@@ -1948,11 +2348,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/nl.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': 'Geen automatische synchronisatie',
 +  'chat.btw.context.hint': 'Deze zijchat gebruikt de hier getoonde momentopname van de hoofdchat. Latere berichten worden niet automatisch gesynchroniseerd. Overgenomen taken dienen alleen als referentie.',
 +  'chat.btw.context.source': 'Bron bekijken',
++  'chat.liveBtw.description': 'Stel een zijvraag met de nieuwste context van het hoofdgesprek.',
++  'chat.liveBtw.unsupported': 'Live zijgesprekken vereisen de desktop-app of de webinterface voor desktops.',
++  'chat.liveBtw.wait': 'Wacht tot het huidige antwoord in het live zijgesprek klaar is voordat je een nieuwe vraag verstuurt.',
++  'chat.liveBtw.context.refresh': 'Vernieuwt voor elke vraag',
++  'chat.liveBtw.context.hint': 'Elke vraag gebruikt een nieuwe momentopname van het hoofdgesprek. Eerdere zijvragen behouden hun oorspronkelijke uitgangspunten.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': 'Nieuwe zijchat',
    'quota.family.zen': 'Zen-modellen',
    'quota.value.requests': 'Verzoeken: {count}',
    'quota.value.spent': '{spent} besteed',
-@@ -2621,8 +2630,8 @@
+@@ -2621,8 +2635,8 @@ export const dict = {
    'chat.textSelection.actions.read': 'Voorlezen',
    'chat.textSelection.actions.stopReading': 'Stoppen',
    'chat.textSelection.actions.comment': 'Reactie',
@@ -1964,9 +2369,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/nl.ts b/packages/ui/src/lib/i18n/
    'chat.textSelection.comment.placeholder': 'Voeg een optionele reactie toe...',
    'chat.textSelection.comment.attach': 'Toevoegen',
 diff --git a/packages/ui/src/lib/i18n/messages/pl.ts b/packages/ui/src/lib/i18n/messages/pl.ts
+index 4c27998..0e05eaf 100644
 --- a/packages/ui/src/lib/i18n/messages/pl.ts
 +++ b/packages/ui/src/lib/i18n/messages/pl.ts
-@@ -67,6 +67,15 @@
+@@ -67,6 +67,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict: Record<I18nKey, string> = {
@@ -1978,11 +2384,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/pl.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': 'Bez automatycznej synchronizacji',
 +  'chat.btw.context.hint': 'Ta rozmowa korzysta ze wskazanej tutaj migawki głównej rozmowy. Późniejsze wiadomości nie synchronizują się automatycznie. Odziedziczone zadania są tylko materiałem odniesienia.',
 +  'chat.btw.context.source': 'Zobacz źródło',
++  'chat.liveBtw.description': 'Zadaj pytanie poboczne z najnowszym kontekstem głównej rozmowy.',
++  'chat.liveBtw.unsupported': 'Rozmowy poboczne na żywo wymagają aplikacji komputerowej lub interfejsu internetowego na komputerze.',
++  'chat.liveBtw.wait': 'Poczekaj na zakończenie bieżącej odpowiedzi w rozmowie pobocznej na żywo przed wysłaniem kolejnego pytania.',
++  'chat.liveBtw.context.refresh': 'Aktualizacja przed każdym pytaniem',
++  'chat.liveBtw.context.hint': 'Każde pytanie korzysta z nowego obrazu głównej rozmowy. Wcześniejsze pytania poboczne zachowują swoje pierwotne założenia.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': 'Nowa rozmowa poboczna',
    'quota.family.zen': 'Modele Zen',
    'quota.value.requests': 'Żądania: {count}',
    'quota.value.spent': 'Wydano {spent}',
-@@ -1184,8 +1193,8 @@
+@@ -1184,8 +1198,8 @@ export const dict: Record<I18nKey, string> = {
    'chat.textSelection.actions.read': 'Czytaj',
    'chat.textSelection.actions.stopReading': 'Zatrzymaj',
    'chat.textSelection.actions.comment': 'Skomentuj',
@@ -1994,9 +2405,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/pl.ts b/packages/ui/src/lib/i18n/
    'chat.textSelection.comment.placeholder': 'Dodaj opcjonalny komentarz...',
    'chat.textSelection.comment.attach': 'Załącz',
 diff --git a/packages/ui/src/lib/i18n/messages/pt-BR.ts b/packages/ui/src/lib/i18n/messages/pt-BR.ts
+index 4564a42..cb439c0 100644
 --- a/packages/ui/src/lib/i18n/messages/pt-BR.ts
 +++ b/packages/ui/src/lib/i18n/messages/pt-BR.ts
-@@ -67,6 +67,15 @@
+@@ -67,6 +67,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict: Record<I18nKey, string> = {
@@ -2008,11 +2420,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/pt-BR.ts b/packages/ui/src/lib/i1
 +  'chat.btw.context.noSync': 'Sem sincronização automática',
 +  'chat.btw.context.hint': 'Esta conversa usa o retrato da conversa principal indicado aqui. Mensagens posteriores não são sincronizadas automaticamente. Tarefas herdadas servem apenas como referência.',
 +  'chat.btw.context.source': 'Ver origem',
++  'chat.liveBtw.description': 'Faça uma pergunta paralela com o contexto mais recente da conversa principal.',
++  'chat.liveBtw.unsupported': 'As conversas paralelas ao vivo exigem o aplicativo para computador ou a interface web para computador.',
++  'chat.liveBtw.wait': 'Aguarde o fim da resposta da conversa paralela ao vivo antes de enviar outra pergunta.',
++  'chat.liveBtw.context.refresh': 'Atualiza antes de cada pergunta',
++  'chat.liveBtw.context.hint': 'Cada pergunta usa um novo retrato da conversa principal. As perguntas paralelas anteriores mantêm suas premissas originais.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': 'Nova conversa lateral',
    'quota.family.zen': 'Modelos Zen',
    'quota.value.requests': 'Solicitações: {count}',
    'quota.value.spent': '{spent} gastos',
-@@ -2542,8 +2551,8 @@
+@@ -2542,8 +2556,8 @@ export const dict: Record<I18nKey, string> = {
    'chat.btw.expandAria': 'Expandir o painel btw',
    'chat.btw.promoteAria': 'Manter como sessão separada',
    'chat.btw.toast.promoteFailed': 'Falha ao manter a sessão btw',
@@ -2024,9 +2441,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/pt-BR.ts b/packages/ui/src/lib/i1
    "chat.container.sessionLoadError.title": "Não foi possível carregar a sessão",
    "chat.container.sessionLoadError.description": "Não foi possível buscar a conversa — o servidor pode estar desligado ou inacessível. Nada foi perdido; tente novamente quando ele voltar.",
 diff --git a/packages/ui/src/lib/i18n/messages/tr.ts b/packages/ui/src/lib/i18n/messages/tr.ts
+index 9692e2b..171b05f 100644
 --- a/packages/ui/src/lib/i18n/messages/tr.ts
 +++ b/packages/ui/src/lib/i18n/messages/tr.ts
-@@ -66,6 +66,15 @@
+@@ -66,6 +66,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict = {
@@ -2038,11 +2456,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/tr.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': 'Otomatik eşitleme yok',
 +  'chat.btw.context.hint': 'Bu sohbet, ana sohbetin burada gösterilen anlık görüntüsünü kullanır. Sonraki iletiler otomatik eşitlenmez. Devralınan görevler yalnızca başvuru içindir.',
 +  'chat.btw.context.source': 'Kaynağı görüntüle',
++  'chat.liveBtw.description': 'Ana sohbetin en güncel bağlamıyla bir yan soru sorun.',
++  'chat.liveBtw.unsupported': 'Canlı yan sohbetler masaüstü uygulamasını veya masaüstü web arayüzünü gerektirir.',
++  'chat.liveBtw.wait': 'Yeni bir soru göndermeden önce geçerli canlı yan sohbet yanıtının bitmesini bekleyin.',
++  'chat.liveBtw.context.refresh': 'Her sorudan önce güncellenir',
++  'chat.liveBtw.context.hint': 'Her soru ana sohbetin yeni bir anlık görüntüsünü kullanır. Önceki yan sorular özgün dayanaklarını korur.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': 'Yeni yan sohbet',
    'quota.family.zen': 'Zen Modelleri',
    'quota.value.requests': 'İstekler: {count}',
    'quota.value.spent': '{spent} harcandı',
-@@ -3631,8 +3640,8 @@
+@@ -3631,8 +3645,8 @@ export const dict = {
    'chat.textSelection.actions.read': 'Oku',
    'chat.textSelection.actions.stopReading': 'Durdur',
    'chat.textSelection.actions.comment': 'Yorum yap',
@@ -2054,9 +2477,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/tr.ts b/packages/ui/src/lib/i18n/
    'chat.textSelection.comment.placeholder': 'İsteğe bağlı bir yorum ekleyin...',
    'chat.textSelection.comment.attach': 'Ekle',
 diff --git a/packages/ui/src/lib/i18n/messages/uk.ts b/packages/ui/src/lib/i18n/messages/uk.ts
+index fd1bb5c..6a3ba84 100644
 --- a/packages/ui/src/lib/i18n/messages/uk.ts
 +++ b/packages/ui/src/lib/i18n/messages/uk.ts
-@@ -67,6 +67,15 @@
+@@ -67,6 +67,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict: Record<I18nKey, string> = {
@@ -2068,11 +2492,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/uk.ts b/packages/ui/src/lib/i18n/
 +  'chat.btw.context.noSync': 'Без автоматичної синхронізації',
 +  'chat.btw.context.hint': 'Ця розмова використовує вказаний тут знімок основної розмови. Подальші повідомлення не синхронізуються автоматично. Успадковані завдання слугують лише довідкою.',
 +  'chat.btw.context.source': 'Переглянути джерело',
++  'chat.liveBtw.description': 'Поставте побічне запитання з найновішим контекстом основного чату.',
++  'chat.liveBtw.unsupported': 'Живі побічні чати потребують настільного застосунку або вебінтерфейсу для комп’ютера.',
++  'chat.liveBtw.wait': 'Зачекайте на завершення поточної відповіді в живому побічному чаті, перш ніж надсилати нове запитання.',
++  'chat.liveBtw.context.refresh': 'Оновлюється перед кожним запитанням',
++  'chat.liveBtw.context.hint': 'Кожне запитання використовує новий знімок основного чату. Попередні побічні запитання зберігають свої початкові передумови.',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': 'Нова бічна розмова',
    'quota.family.zen': 'Моделі Zen',
    'quota.value.requests': 'Запити: {count}',
    'quota.value.spent': 'Витрачено {spent}',
-@@ -2589,8 +2598,8 @@
+@@ -2589,8 +2603,8 @@ export const dict: Record<I18nKey, string> = {
    "chat.textSelection.actions.read": "Читати",
    "chat.textSelection.actions.stopReading": "Зупинити",
    "chat.textSelection.actions.comment": "Коментувати",
@@ -2084,9 +2513,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/uk.ts b/packages/ui/src/lib/i18n/
    "chat.textSelection.comment.placeholder": "Додайте коментар за бажанням...",
    "chat.textSelection.comment.attach": "Прикріпити",
 diff --git a/packages/ui/src/lib/i18n/messages/zh-CN.ts b/packages/ui/src/lib/i18n/messages/zh-CN.ts
+index 6e500bf..e87268a 100644
 --- a/packages/ui/src/lib/i18n/messages/zh-CN.ts
 +++ b/packages/ui/src/lib/i18n/messages/zh-CN.ts
-@@ -67,6 +67,15 @@
+@@ -67,6 +67,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict: Record<I18nKey, string> = {
@@ -2098,11 +2528,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/zh-CN.ts b/packages/ui/src/lib/i1
 +  'chat.btw.context.noSync': '不自动同步',
 +  'chat.btw.context.hint': '此侧聊使用此处标明的主会话快照。快照之后的新消息不会自动同步。继承的任务仅供参考。',
 +  'chat.btw.context.source': '查看来源',
++  'chat.liveBtw.description': '基于主聊天的最新上下文进行侧聊。',
++  'chat.liveBtw.unsupported': '实时侧聊需要桌面应用或桌面网页版。',
++  'chat.liveBtw.wait': '请等当前实时侧聊回答结束后再发送新问题。',
++  'chat.liveBtw.context.refresh': '每次提问前更新',
++  'chat.liveBtw.context.hint': '每次提问都使用主聊天的最新快照。此前侧聊问题保留各自当时的前提。',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': '新建侧边聊天',
    'quota.family.zen': 'Zen 模型',
    'quota.value.requests': '请求数：{count}',
    'quota.value.spent': '已花费 {spent}',
-@@ -2587,8 +2596,8 @@
+@@ -2587,8 +2601,8 @@ export const dict: Record<I18nKey, string> = {
    'chat.textSelection.actions.read': '朗读',
    'chat.textSelection.actions.stopReading': '停止',
    'chat.textSelection.actions.comment': '评论',
@@ -2114,9 +2549,10 @@ diff --git a/packages/ui/src/lib/i18n/messages/zh-CN.ts b/packages/ui/src/lib/i1
    'chat.textSelection.comment.placeholder': '添加可选评论...',
    'chat.textSelection.comment.attach': '附加',
 diff --git a/packages/ui/src/lib/i18n/messages/zh-TW.ts b/packages/ui/src/lib/i18n/messages/zh-TW.ts
+index d1a7f8a..fafc90e 100644
 --- a/packages/ui/src/lib/i18n/messages/zh-TW.ts
 +++ b/packages/ui/src/lib/i18n/messages/zh-TW.ts
-@@ -67,6 +67,15 @@
+@@ -67,6 +67,20 @@ import { tooltipsPanelI18n } from './tooltips-panel.i18n';
  import { tooltipsChatI18n } from './tooltips-chat.i18n';
  
  export const dict: Record<I18nKey, string> = {
@@ -2128,11 +2564,16 @@ diff --git a/packages/ui/src/lib/i18n/messages/zh-TW.ts b/packages/ui/src/lib/i1
 +  'chat.btw.context.noSync': '不自動同步',
 +  'chat.btw.context.hint': '此側聊使用此處標明的主會話快照。快照之後的新訊息不會自動同步。繼承的任務僅供參考。',
 +  'chat.btw.context.source': '查看來源',
++  'chat.liveBtw.description': '根據主聊天的最新上下文進行側聊。',
++  'chat.liveBtw.unsupported': '即時側聊需要桌面應用程式或桌面網頁版。',
++  'chat.liveBtw.wait': '請等待目前即時側聊回答結束後再傳送新問題。',
++  'chat.liveBtw.context.refresh': '每次提問前更新',
++  'chat.liveBtw.context.hint': '每次提問都使用主聊天的最新快照。先前側聊問題保留各自當時的前提。',
 +  'settings.openchamber.keyboardShortcuts.action.open_side_chat.label': '新增側邊聊天',
    'quota.family.zen': 'Zen 模型',
    'quota.value.requests': '請求數：{count}',
    'quota.value.spent': '已花費 {spent}',
-@@ -2598,8 +2607,8 @@
+@@ -2598,8 +2612,8 @@ export const dict: Record<I18nKey, string> = {
    'chat.textSelection.actions.read': '朗讀',
    'chat.textSelection.actions.stopReading': '停止',
    'chat.textSelection.actions.comment': '留言',
@@ -2143,10 +2584,147 @@ diff --git a/packages/ui/src/lib/i18n/messages/zh-TW.ts b/packages/ui/src/lib/i1
    'chat.textSelection.title.commentOnSelection': '對所選內容留言',
    'chat.textSelection.comment.placeholder': '新增選填留言...',
    'chat.textSelection.comment.attach': '附加',
+diff --git a/packages/ui/src/lib/opencode/DOCUMENTATION.md b/packages/ui/src/lib/opencode/DOCUMENTATION.md
+index 05bf3f5..99b9226 100644
+--- a/packages/ui/src/lib/opencode/DOCUMENTATION.md
++++ b/packages/ui/src/lib/opencode/DOCUMENTATION.md
+@@ -7,6 +7,16 @@ to the shared UI domain model. Sync owns transcript membership and store writes.
+ 
+ ## Invariants
+ 
++- Live BTW snapshot assembly stays inside this adapter because it reads native message and instruction-entry records.
++- A fresh main fork provides the immutable snapshot used by the native import route.
++- Import preserves every main message's content and native provider data.
++- A running main assistant becomes a settled reference copy without executing its pending work.
++- Session instruction entries also move to the import before its first prompt.
++- Earlier side turns retain user input, attached context and final assistant text.
++- Earlier side reasoning and tool calls do not enter the rebuilt request.
++- Every earlier question keeps its original main-session premise.
++- A failed authoritative read stops preparation and preserves the previous live transcript.
++
+ - `getSessionMessage` reads only the requested session. Pins, message references
+   and linked-message existence checks must retain this strict behavior.
+ - `getToolContentMessage` is reserved for `completeToolContent`, which checks
+@@ -28,6 +38,12 @@ to the shared UI domain model. Sync owns transcript membership and store writes.
+ 
+ ## Decisions
+ 
++### Why live BTW copies instruction entries separately
++
++OpenCode stores API-managed instruction entries outside its message transcript.
++Copying messages alone changes the system prefix when the parent has such entries.
++The live request probe checks the complete serialized prefix with a custom instruction entry.
++
+ ### Why fresh provider reads wait for post-call requests
+ 
+ Provider, model and default-model reads share one catalog promise per directory
+diff --git a/packages/ui/src/lib/opencode/client.ts b/packages/ui/src/lib/opencode/client.ts
+index d053386..b3e3692 100644
+--- a/packages/ui/src/lib/opencode/client.ts
++++ b/packages/ui/src/lib/opencode/client.ts
+@@ -23,6 +23,7 @@ import type {
+   LocationGetOutput,
+   SessionInboxDelivery,
+   SessionRevert,
++  SessionMessageInfo,
+ } from "@opencode/client"
+ import { z } from "zod"
+ import type { FilesAPI } from "../api/types"
+@@ -69,7 +70,8 @@ import {
+   type Vcs,
+   toModelRef,
+ } from "./model"
+-import { ascendingId } from "./ids"
++import { ascendingId, descendingId } from "./ids"
++import { buildLiveBtwMessages, collectLiveBtwTurns } from "./live-btw-context"
+ import { runningShellFromWire, shellCancellationNote, type RunningShell, type ShellToStop } from "./background-shell"
+ import { runningImageJobFromWire, type RunningImageJob } from "./background-image"
+ import { subagentCancellationNote } from "./subagent-run"
+@@ -1139,6 +1141,79 @@ class OpencodeService {
+     return projectSession(info)
+   }
+ 
++  /** Creates a new native transcript from a frozen main snapshot and earlier side-chat final answers. */
++  async rebuildLiveBtwSession(params: {
++    snapshotSessionId: string
++    previousSessionId?: string
++    previousBoundaryMessageID?: string | null
++    previousRevertMessageID?: string
++    parentSessionId?: string
++    directory: string
++    runtimeKey: string
++    start: string
++    end: string
++    metadata: (sessionId: string, boundaryMessageID: string | null, snapshotAt: number, sourceMetadata: Metadata) => Metadata
++  }): Promise<Session> {
++    const check = () => this.assertRuntimeUnchanged(params.runtimeKey)
++    check()
++    const cleanup = await this.captureSessionCleanup(params.directory, params.runtimeKey)
++    check()
++    const sdk = () => this.clientFor(params.directory)
++    if (params.previousSessionId) {
++      const active = await call("session.active", () => sdk().session.active())
++      check()
++      if (Object.hasOwn(active, params.previousSessionId)) throw new Error("Wait for the current live BTW answer before sending another question.")
++    }
++    const snapshotInfo = await call("session.get", () => sdk().session.get({ sessionID: params.snapshotSessionId }))
++    check()
++    const snapshot = await call("session.context", () => sdk().session.context({ sessionID: params.snapshotSessionId }))
++    check()
++    const entries = await call("session.instructions.entry.list", () => sdk().experimental.session.instructions.entry.list({ sessionID: params.snapshotSessionId }))
++    check()
++    const previous: SessionMessageInfo[] = []
++    if (params.previousSessionId) {
++      let cursor: string | undefined
++      do {
++        const page = await call("message.list", () => sdk().message.list({
++          sessionID: params.previousSessionId!, limit: 200,
++          ...(cursor ? { cursor } : { order: "asc" as const }),
++        }))
++        check()
++        previous.push(...page.data)
++        cursor = page.data.length === 200 ? page.cursor.next ?? undefined : undefined
++      } while (cursor)
++    }
++    const snapshotAt = snapshotInfo.time.created
++    const replay = buildLiveBtwMessages({
++      snapshot, turns: collectLiveBtwTurns(previous, params.previousBoundaryMessageID ?? null, params.previousRevertMessageID),
++      start: params.start, end: params.end, snapshotAt,
++    })
++    const id = descendingId("ses")
++    let created = false
++    try {
++      check()
++      const session = await call("session.import", () => sdk().experimental.session.import({
++        info: {
++          ...snapshotInfo, id, fork: undefined, parentID: params.parentSessionId ?? snapshotInfo.parentID,
++          metadata: params.metadata(id, replay.boundaryMessageID, snapshotAt, snapshotInfo.metadata ?? {}),
++        },
++        messages: replay.messages.map((message) => toJsonRecord({ ...message })),
++        location: { directory: toOpenCodeDirectory(params.directory) },
++      }))
++      created = true
++      check()
++      // Instruction entries are part of the cached system prefix and are separate from transcript messages.
++      for (const entry of entries) {
++        await call("session.instructions.entry.put", () => sdk().experimental.session.instructions.entry.put({ sessionID: id, ...entry }))
++        check()
++      }
++      return projectSession(session)
++    } catch (error) {
++      if (created) await cleanup(id).catch((failure) => console.warn("Could not clean up the live BTW preparation:", failure))
++      throw error
++    }
++  }
++
+   async deleteSession(id: string, directory?: string | null): Promise<boolean> {
+     await call("session.remove", () => this.clientFor(directory).session.remove({ sessionID: id }))
+     return true
 diff --git a/packages/ui/src/lib/paletteCommands.ts b/packages/ui/src/lib/paletteCommands.ts
+index 31d3b70..50705fe 100644
 --- a/packages/ui/src/lib/paletteCommands.ts
 +++ b/packages/ui/src/lib/paletteCommands.ts
-@@ -15,6 +15,11 @@
+@@ -15,6 +15,11 @@ import { resolveGlobalSessionDirectory, useGlobalSessionsStore } from '@/stores/
  import { useDirectoryStore } from '@/stores/useDirectoryStore';
  import { useSessionPinnedStore } from '@/stores/useSessionPinnedStore';
  import { useUIStore } from '@/stores/useUIStore';
@@ -2158,11 +2736,10 @@ diff --git a/packages/ui/src/lib/paletteCommands.ts b/packages/ui/src/lib/palett
  
  type Translate = (key: I18nKey, params?: I18nParams) => string;
  
-@@ -26,6 +31,16 @@
-  * VS Code and the mobile apps have neither the commands nor the Shortcuts page.
+@@ -27,6 +32,16 @@ type Translate = (key: I18nKey, params?: I18nParams) => string;
   */
  type PaletteCommand = () => boolean | void;
-+
+ 
 +export const openSideChat: PaletteCommand = () => {
 +  const { currentSessionId, newSessionDraft } = useSessionUIStore.getState();
 +  const ui = useUIStore.getState();
@@ -2172,13 +2749,15 @@ diff --git a/packages/ui/src/lib/paletteCommands.ts b/packages/ui/src/lib/palett
 +    || resolveChatPromptReadOnly(source, ui.allowPromptingSubagentSessions, false)) return false;
 +  useInputStore.getState().requestBtwComposer({ parentSessionId: currentSessionId, text: '' });
 +};
- 
++
  export const addProject: PaletteCommand = () => {
    sessionEvents.requestDirectoryDialog();
+ };
 diff --git a/packages/ui/src/lib/router/DOCUMENTATION.md b/packages/ui/src/lib/router/DOCUMENTATION.md
+index 4fcef01..b46a5c5 100644
 --- a/packages/ui/src/lib/router/DOCUMENTATION.md
 +++ b/packages/ui/src/lib/router/DOCUMENTATION.md
-@@ -18,10 +18,12 @@
+@@ -18,10 +18,12 @@ window focus, acknowledgement deadlines, and document-navigation fallback.
    an old page without a listener, and an expired request cannot claim acceptance.
  - Acceptance does not wait for network-backed session resolution. The existing
    session-link owner resolves the directory and guards against later selection.
@@ -2192,7 +2771,7 @@ diff --git a/packages/ui/src/lib/router/DOCUMENTATION.md b/packages/ui/src/lib/r
  - Back/Forward during route loading retains the latest requested route. Only
    its completed application may normalize the current history entry.
  - The worker focuses before messaging and waits at most 1500 ms for acceptance.
-@@ -34,13 +36,12 @@
+@@ -34,13 +36,12 @@ window focus, acknowledgement deadlines, and document-navigation fallback.
  
  ## Decisions
  
@@ -2212,9 +2791,10 @@ diff --git a/packages/ui/src/lib/router/DOCUMENTATION.md b/packages/ui/src/lib/r
  ### Why acknowledged app navigation and not unconditional document navigation
  
 diff --git a/packages/ui/src/lib/router/openSessionFromRoute.test.ts b/packages/ui/src/lib/router/openSessionFromRoute.test.ts
+index e02b644..689d291 100644
 --- a/packages/ui/src/lib/router/openSessionFromRoute.test.ts
 +++ b/packages/ui/src/lib/router/openSessionFromRoute.test.ts
-@@ -6,6 +6,8 @@
+@@ -6,6 +6,8 @@ import { useGlobalSessionsStore } from '@/stores/useGlobalSessionsStore';
  import { useProjectsStore } from '@/stores/useProjectsStore';
  import { getRememberedSessionDirectory, useSessionUIStore } from '@/sync/session-ui-store';
  import { openSessionFromToast } from '@/sync/session-navigation';
@@ -2223,7 +2803,7 @@ diff --git a/packages/ui/src/lib/router/openSessionFromRoute.test.ts b/packages/
  
  import { openSession, openSessionFromRoute, openSessionLink } from './openSessionFromRoute';
  
-@@ -44,6 +46,44 @@
+@@ -44,6 +46,44 @@ const useSessions = (sessions: Session[]): void => {
  };
  
  describe('openSessionFromRoute', () => {
@@ -2268,7 +2848,7 @@ diff --git a/packages/ui/src/lib/router/openSessionFromRoute.test.ts b/packages/
    test('native jump-list entries ignore unknown sessions and open known sessions', async () => {
      useSessions([buildSession(SESSION_ID, PROJECT_DIR)]);
      useSessionUIStore.getState().setCurrentSession(SESSION_ID, PROJECT_DIR);
-@@ -65,7 +105,9 @@
+@@ -65,7 +105,9 @@ describe('openSessionFromRoute', () => {
      expect(useSessionUIStore.getState().currentSessionDirectory).toBe(OTHER_DIR);
    });
    beforeEach(() => {
@@ -2280,6 +2860,7 @@ diff --git a/packages/ui/src/lib/router/openSessionFromRoute.test.ts b/packages/
      useGlobalSessionsStore.setState({
        activeSessions: [],
 diff --git a/packages/ui/src/lib/router/openSessionFromRoute.ts b/packages/ui/src/lib/router/openSessionFromRoute.ts
+index 03028d5..d1416bf 100644
 --- a/packages/ui/src/lib/router/openSessionFromRoute.ts
 +++ b/packages/ui/src/lib/router/openSessionFromRoute.ts
 @@ -1,5 +1,12 @@
@@ -2296,7 +2877,7 @@ diff --git a/packages/ui/src/lib/router/openSessionFromRoute.ts b/packages/ui/sr
  import { ensureGlobalSessionsLoaded, resolveGlobalSessionDirectory, useGlobalSessionsStore } from '@/stores/useGlobalSessionsStore';
  import { useBtwStore } from '@/stores/useBtwStore';
  import { useSessionUIStore } from '@/sync/session-ui-store';
-@@ -23,6 +30,7 @@
+@@ -23,6 +30,7 @@ type SessionOpenTarget = {
    sessionId: string;
    directory: string | null;
    btwParentId: string | null;
@@ -2304,7 +2885,7 @@ diff --git a/packages/ui/src/lib/router/openSessionFromRoute.ts b/packages/ui/sr
  };
  
  const btwParentOf = (session: Session | undefined): string | null => {
-@@ -31,10 +39,8 @@
+@@ -31,10 +39,8 @@ const btwParentOf = (session: Session | undefined): string | null => {
  };
  
  /**
@@ -2317,7 +2898,7 @@ diff --git a/packages/ui/src/lib/router/openSessionFromRoute.ts b/packages/ui/sr
   */
  const targetFor = (
    session: Session | undefined,
-@@ -43,6 +49,15 @@
+@@ -43,6 +49,15 @@ const targetFor = (
  ): SessionOpenTarget => {
    const parentId = btwParentOf(session);
    const directory = session ? resolveGlobalSessionDirectory(session) : null;
@@ -2333,7 +2914,7 @@ diff --git a/packages/ui/src/lib/router/openSessionFromRoute.ts b/packages/ui/sr
    return parentId && parentExists(parentId)
      ? { sessionId: parentId, directory, btwParentId: parentId }
      : { sessionId: fallbackId, directory, btwParentId: null };
-@@ -51,6 +66,13 @@
+@@ -51,6 +66,13 @@ const targetFor = (
  const selectTarget = (target: SessionOpenTarget, directoryHint: string | null): void => {
    const state = useSessionUIStore.getState();
    const directory = directoryHint ?? state.getDirectoryForSession(target.sessionId) ?? target.directory;
@@ -2347,7 +2928,7 @@ diff --git a/packages/ui/src/lib/router/openSessionFromRoute.ts b/packages/ui/sr
    const directoryChanged = directory !== null && directory !== state.currentSessionDirectory;
    if (state.currentSessionId !== target.sessionId || directoryChanged) {
      state.setCurrentSession(target.sessionId, directory);
-@@ -79,11 +101,16 @@
+@@ -79,11 +101,16 @@ export async function openSession(sessionId: string, options: SessionOpenOptions
    const messageId = options.messageId?.trim() || null;
    if (messageId) requestMessageFocus(requestedId, messageId);
  
@@ -2366,7 +2947,7 @@ diff --git a/packages/ui/src/lib/router/openSessionFromRoute.ts b/packages/ui/sr
  
    // Cold loads often do not know the owning directory, or even the session
    // record, so the first selection can guess. Once the global list is
-@@ -92,15 +119,38 @@
+@@ -92,15 +119,38 @@ export async function openSession(sessionId: string, options: SessionOpenOptions
    if (!snapshot) return;
  
    const latest = useSessionUIStore.getState();
@@ -2409,24 +2990,45 @@ diff --git a/packages/ui/src/lib/router/openSessionFromRoute.ts b/packages/ui/sr
      redirecting = true;
      try {
 diff --git a/packages/ui/src/lib/sessionBtwMetadata.test.ts b/packages/ui/src/lib/sessionBtwMetadata.test.ts
+index b4b3f51..3efc4be 100644
 --- a/packages/ui/src/lib/sessionBtwMetadata.test.ts
 +++ b/packages/ui/src/lib/sessionBtwMetadata.test.ts
-@@ -4,7 +4,11 @@
+@@ -4,7 +4,15 @@ import {
    getBtwBoundaryMessageID,
    getBtwOriginalSessionID,
    getBtwSessionID,
 +  getBtwSourceMessageID,
 +  getBtwSourceCompletedAt,
 +  getBtwSnapshotAt,
++  getLiveBtwHeadSessionID,
++  getLiveBtwRootSessionID,
++  isLiveBtwSession,
++  withLiveBtwHead,
    isBtwSession,
 +  isSideBtwSession,
    withBtwSessionLink,
    withBtwSessionMarker,
    withoutBtwSessionLink,
-@@ -39,6 +43,65 @@
+@@ -39,6 +47,81 @@ describe('parent link', () => {
  });
  
  describe('fork marker', () => {
++  test('live roots and prepared heads survive metadata serialization', () => {
++    const metadata = withBtwSessionMarker({}, 'main', 'boundary', 'side', { mode: 'live', liveRootSessionID: 'root', snapshotAt: 200 });
++    const head = sessionWith(JSON.parse(JSON.stringify(metadata)));
++    expect(isLiveBtwSession(head)).toBe(true);
++    expect(getLiveBtwRootSessionID(head)).toBe('root');
++    const root = sessionWith(withLiveBtwHead(metadata, 'new-head'));
++    expect(getLiveBtwHeadSessionID(root)).toBe('new-head');
++    expect(getBtwOriginalSessionID(root)).toBe('main');
++    expect(withoutBtwSessionMarker(root.metadata!)).toEqual({ openchamber: { btwPromoted: true } });
++  });
++
++  test('ordinary BTW and unrelated external metadata never enable live refresh', () => {
++    expect(isLiveBtwSession(sessionWith(withBtwSessionMarker({}, 'main', null, 'side')))).toBe(false);
++    expect(getLiveBtwRootSessionID(sessionWith({ openchamber: { kind: 'review', btwMode: 'live', btwLiveRootSessionID: 'other' } }))).toBeNull();
++    expect(getLiveBtwHeadSessionID(null)).toBeNull();
++  });
 +  test('a latest-history snapshot records creation time without inventing a parent message ID', () => {
 +    const metadata = withBtwSessionMarker({}, 'parent-1', 'cloned-running-message', 'side', { snapshotAt: 200 });
 +    const fork = sessionWith(JSON.parse(JSON.stringify(metadata)));
@@ -2490,9 +3092,10 @@ diff --git a/packages/ui/src/lib/sessionBtwMetadata.test.ts b/packages/ui/src/li
      const inherited = { openchamber: { btwSessionID: 'stale', reviewSessionID: 'r-1' }, other: 1 };
      expect(withBtwSessionMarker(inherited, 'parent-1', 'msg-9')).toEqual({
 diff --git a/packages/ui/src/lib/sessionBtwMetadata.ts b/packages/ui/src/lib/sessionBtwMetadata.ts
+index e963814..ad61821 100644
 --- a/packages/ui/src/lib/sessionBtwMetadata.ts
 +++ b/packages/ui/src/lib/sessionBtwMetadata.ts
-@@ -22,6 +22,10 @@
+@@ -22,6 +22,13 @@ type BtwMetadata = {
    btwSessionID?: string;
    btwBoundaryMessageID?: string;
    btwPromoted?: boolean;
@@ -2500,35 +3103,52 @@ diff --git a/packages/ui/src/lib/sessionBtwMetadata.ts b/packages/ui/src/lib/ses
 +  btwSourceMessageID?: string;
 +  btwSourceCompletedAt?: number;
 +  btwSnapshotAt?: number;
++  btwMode?: 'live';
++  btwLiveRootSessionID?: string;
++  btwLiveHeadSessionID?: string;
  };
  
  const getOpenChamberMetadata = (metadata: SessionMetadataRecord): BtwMetadata => {
-@@ -35,6 +39,9 @@
- 
+@@ -36,6 +43,9 @@ const getOpenChamberMetadata = (metadata: SessionMetadataRecord): BtwMetadata =>
  const nonEmpty = (value: string | undefined): string | null =>
    typeof value === 'string' && value.trim().length > 0 ? value : null;
-+
+ 
 +const timestamp = (value: unknown): number | null =>
 +  typeof value === 'number' && Number.isFinite(value) && value > 0 && value <= 8.64e15 ? value : null;
- 
++
  /** The parent's link to its active btw fork, or null. */
  export const getBtwSessionID = (session: Session | null | undefined): string | null =>
-@@ -56,6 +63,9 @@
+   nonEmpty(getOpenChamberMetadata(getSessionMetadata(session)).btwSessionID);
+@@ -56,6 +66,25 @@ export const isBtwSession = (session: Session | null | undefined): boolean =>
    getOpenChamberMetadata(getSessionMetadata(session)).kind === 'btw'
    && Boolean(getBtwOriginalSessionID(session));
  
 +export const isSideBtwSession = (session: Session | null | undefined): boolean =>
 +  isBtwSession(session) && getOpenChamberMetadata(getSessionMetadata(session)).btwPresentation === 'side';
 +
++export const isLiveBtwSession = (session: Session | null | undefined): boolean =>
++  isBtwSession(session) && getOpenChamberMetadata(getSessionMetadata(session)).btwMode === 'live';
++
++export const getLiveBtwRootSessionID = (session: Session | null | undefined): string | null =>
++  isLiveBtwSession(session) ? nonEmpty(getOpenChamberMetadata(getSessionMetadata(session)).btwLiveRootSessionID) ?? session?.id ?? null : null;
++
++export const getLiveBtwHeadSessionID = (session: Session | null | undefined): string | null =>
++  isLiveBtwSession(session) ? nonEmpty(getOpenChamberMetadata(getSessionMetadata(session)).btwLiveHeadSessionID) ?? session?.id ?? null : null;
++
++export const withLiveBtwHead = (metadata: SessionMetadataRecord, sessionID: string, expectedHeadID?: string): SessionMetadataRecord => {
++  const current = getOpenChamberMetadata(metadata);
++  const head = nonEmpty(current.btwLiveHeadSessionID) ?? nonEmpty(current.btwLiveRootSessionID);
++  if (expectedHeadID && head !== expectedHeadID) throw new Error('The live BTW conversation changed during preparation. Send the question again.');
++  return { ...metadata, openchamber: { ...current, btwLiveHeadSessionID: sessionID } };
++};
++
  /** The fork's back-pointer to the session `/btw` was typed into. */
  export const getBtwOriginalSessionID = (session: Session | null | undefined): string | null => {
    const openchamber = getOpenChamberMetadata(getSessionMetadata(session));
-@@ -69,6 +79,21 @@
- export const getBtwBoundaryMessageID = (session: Session | null | undefined): string | null => {
-   const openchamber = getOpenChamberMetadata(getSessionMetadata(session));
+@@ -71,6 +100,21 @@ export const getBtwBoundaryMessageID = (session: Session | null | undefined): st
    return openchamber.kind === 'btw' ? nonEmpty(openchamber.btwBoundaryMessageID) : null;
-+};
-+
+ };
+ 
 +/** The parent's completed answer that supplied this fork's reference context. */
 +export const getBtwSourceMessageID = (session: Session | null | undefined): string | null =>
 +  isBtwSession(session) ? nonEmpty(getOpenChamberMetadata(getSessionMetadata(session)).btwSourceMessageID) : null;
@@ -2542,28 +3162,51 @@ diff --git a/packages/ui/src/lib/sessionBtwMetadata.ts b/packages/ui/src/lib/ses
 +export const getBtwSnapshotAt = (session: Session | null | undefined): number | null => {
 +  if (!isBtwSession(session)) return null;
 +  return timestamp(getOpenChamberMetadata(getSessionMetadata(session)).btwSnapshotAt);
- };
- 
++};
++
  export const withBtwSessionLink = (
-@@ -91,9 +116,17 @@
+   metadata: SessionMetadataRecord,
+   btwSessionID: string,
+@@ -91,9 +135,37 @@ export const withBtwSessionMarker = (
    metadata: SessionMetadataRecord,
    originalSessionID: string,
    boundaryMessageID: string | null,
 +  presentation?: 'side',
-+  source?: { messageID?: string; completedAt?: number; snapshotAt?: number },
++  source?: { messageID?: string; completedAt?: number; snapshotAt?: number; mode?: 'live'; liveRootSessionID?: string },
  ): SessionMetadataRecord => {
-   const openchamber: BtwMetadata = { kind: 'btw', originalSessionID };
+-  const openchamber: BtwMetadata = { kind: 'btw', originalSessionID };
++  const openchamber: BtwMetadata = source?.mode === 'live'
++    ? { ...getOpenChamberMetadata(metadata) }
++    : {};
++  delete openchamber.kind;
++  delete openchamber.originalSessionID;
++  delete openchamber.btwSessionID;
++  delete openchamber.btwBoundaryMessageID;
++  delete openchamber.btwPromoted;
++  delete openchamber.btwPresentation;
++  delete openchamber.btwSourceMessageID;
++  delete openchamber.btwSourceCompletedAt;
++  delete openchamber.btwSnapshotAt;
++  delete openchamber.btwMode;
++  delete openchamber.btwLiveRootSessionID;
++  delete openchamber.btwLiveHeadSessionID;
++  openchamber.kind = 'btw';
++  openchamber.originalSessionID = originalSessionID;
    if (boundaryMessageID) openchamber.btwBoundaryMessageID = boundaryMessageID;
 +  if (presentation) openchamber.btwPresentation = presentation;
 +  if (source) {
 +    if (source.messageID) openchamber.btwSourceMessageID = source.messageID;
 +    if (source.completedAt !== undefined) openchamber.btwSourceCompletedAt = source.completedAt;
 +    if (source.snapshotAt !== undefined) openchamber.btwSnapshotAt = source.snapshotAt;
++    if (source.mode === 'live') {
++      openchamber.btwMode = 'live';
++      if (source.liveRootSessionID) openchamber.btwLiveRootSessionID = source.liveRootSessionID;
++    }
 +  }
    return { ...metadata, openchamber };
  };
  
-@@ -111,6 +144,10 @@
+@@ -111,6 +183,13 @@ export const withoutBtwSessionMarker = (metadata: SessionMetadataRecord): Sessio
    delete rest.kind;
    delete rest.originalSessionID;
    delete rest.btwBoundaryMessageID;
@@ -2571,47 +3214,52 @@ diff --git a/packages/ui/src/lib/sessionBtwMetadata.ts b/packages/ui/src/lib/ses
 +  delete rest.btwSourceMessageID;
 +  delete rest.btwSourceCompletedAt;
 +  delete rest.btwSnapshotAt;
++  delete rest.btwMode;
++  delete rest.btwLiveRootSessionID;
++  delete rest.btwLiveHeadSessionID;
    rest.btwPromoted = true;
    return { ...metadata, openchamber: rest };
  };
 diff --git a/packages/ui/src/lib/shortcuts/DOCUMENTATION.md b/packages/ui/src/lib/shortcuts/DOCUMENTATION.md
+index f34fdc6..54e1708 100644
 --- a/packages/ui/src/lib/shortcuts/DOCUMENTATION.md
 +++ b/packages/ui/src/lib/shortcuts/DOCUMENTATION.md
-@@ -11,6 +11,10 @@
- Palette commands name their shortcut by schema ID (`shortcutId` is typed as `ShortcutActionId`), so a misspelled ID fails type-check instead of silently showing no shortcut. A command's handler still registers beside its owner; the schema does not hold handlers, so a new command is complete only once its handler exists.
+@@ -12,6 +12,10 @@ Palette commands name their shortcut by schema ID (`shortcutId` is typed as `Sho
  
  Commands that also have a palette entry share one function with that entry (`lib/paletteCommands.ts`), and `hooks/usePaletteShortcuts.ts` registers their handlers from `MainLayout`. The palette itself loads on demand, so a handler registered inside it would not exist until the first time it opened.
-+
+ 
 +`open_side_chat` uses `mod+alt+s` by default.
 +The shortcut, header menu, and palette share the pending BTW request owned by the source composer.
 +They open a native side-chat draft without sending a model request or changing the source draft.
- 
++
  These commands are a web and desktop feature, and each runtime's root sets the boundary:
  
+ - Web and desktop (Electron) mount `MainLayout`, so the palette handlers and the Shortcuts settings page both exist.
 diff --git a/packages/ui/src/lib/shortcuts/config.ts b/packages/ui/src/lib/shortcuts/config.ts
+index a2a9c13..a85e431 100644
 --- a/packages/ui/src/lib/shortcuts/config.ts
 +++ b/packages/ui/src/lib/shortcuts/config.ts
-@@ -65,6 +65,12 @@
+@@ -64,6 +64,12 @@ const SHORTCUT_GROUPS = {
+       customizable: true,
        settingsLabelKey: 'settings.openchamber.keyboardShortcuts.action.new_chat.label',
      },
-     {
++    {
 +      id: 'open_side_chat',
 +      defaultBinding: 'mod+alt+s',
 +      customizable: true,
 +      settingsLabelKey: 'settings.openchamber.keyboardShortcuts.action.open_side_chat.label',
 +    },
-+    {
+     {
        id: 'switch_session_previous',
        defaultBinding: 'mod+alt+arrowleft',
-       customizable: true,
 diff --git a/packages/ui/src/stores/DOCUMENTATION.md b/packages/ui/src/stores/DOCUMENTATION.md
+index a6ffb4c..626995f 100644
 --- a/packages/ui/src/stores/DOCUMENTATION.md
 +++ b/packages/ui/src/stores/DOCUMENTATION.md
-@@ -14,6 +14,19 @@
- - updated imperatively from multiple surfaces
+@@ -15,6 +15,19 @@ Use a store when state is:
  
  Do not put high-frequency local component state here just because it is convenient.
-+
+ 
 +## BTW selection
 +
 +New BTW selections inherit the source composer's agent, provider, model and reasoning effort.
@@ -2624,13 +3272,15 @@ diff --git a/packages/ui/src/stores/DOCUMENTATION.md b/packages/ui/src/stores/DO
 +
 +The same agent preserves the source configuration used for the cached prompt prefix.
 +An independent Plan default changes the selected agent even when the user only wants a side question.
- 
++
  ## Architecture
  
+ Session destination registration is owned by `sync/session-admission.ts`.
 diff --git a/packages/ui/src/stores/useBtwStore.test.ts b/packages/ui/src/stores/useBtwStore.test.ts
+index 7b334d2..7022ab3 100644
 --- a/packages/ui/src/stores/useBtwStore.test.ts
 +++ b/packages/ui/src/stores/useBtwStore.test.ts
-@@ -7,6 +7,7 @@
+@@ -7,6 +7,7 @@ const input = {
    agents: [{ name: 'build', mode: 'primary' as const, hidden: false }, { name: 'plan', mode: 'primary' as const, hidden: false }],
    savedAgent: null,
    savedModel: null,
@@ -2638,7 +3288,7 @@ diff --git a/packages/ui/src/stores/useBtwStore.test.ts b/packages/ui/src/stores
    composerModel,
    composerVariant: 'medium',
  };
-@@ -46,20 +47,28 @@
+@@ -46,20 +47,28 @@ describe('useBtwStore', () => {
      expect(useBtwStore.getState().byParent).toBe(before);
    });
  
@@ -2671,7 +3321,7 @@ diff --git a/packages/ui/src/stores/useBtwStore.test.ts b/packages/ui/src/stores
      expect(resolveBtwSelection({ ...input, savedModel }).variant).toBe(undefined);
    });
  
-@@ -109,6 +118,7 @@
+@@ -109,6 +118,7 @@ describe('resolveBtwSelection with a live-catalog check', () => {
        savedAgent: 'plan',
        savedModel: SAVED_DEAD,
        savedVariant: 'high',
@@ -2679,7 +3329,7 @@ diff --git a/packages/ui/src/stores/useBtwStore.test.ts b/packages/ui/src/stores
        composerModel: COMPOSER,
        composerVariant: 'high',
        isModelAvailable: (model) => model.providerId === 'omniroute',
-@@ -123,6 +133,7 @@
+@@ -123,6 +133,7 @@ describe('resolveBtwSelection with a live-catalog check', () => {
        savedAgent: 'plan',
        savedModel: COMPOSER,
        savedVariant: 'high',
@@ -2687,7 +3337,7 @@ diff --git a/packages/ui/src/stores/useBtwStore.test.ts b/packages/ui/src/stores
        composerModel: COMPOSER,
        composerVariant: 'low',
        isModelAvailable: () => true,
-@@ -137,6 +148,7 @@
+@@ -137,6 +148,7 @@ describe('resolveBtwSelection with a live-catalog check', () => {
        savedAgent: 'plan',
        savedModel: SAVED_DEAD,
        savedVariant: 'high',
@@ -2695,7 +3345,7 @@ diff --git a/packages/ui/src/stores/useBtwStore.test.ts b/packages/ui/src/stores
        composerModel: COMPOSER,
        composerVariant: 'high',
      });
-@@ -150,6 +162,7 @@
+@@ -150,6 +162,7 @@ describe('resolveBtwSelection with a live-catalog check', () => {
        savedAgent: 'plan',
        savedModel: SAVED_DEAD,
        savedVariant: 'high',
@@ -2703,7 +3353,7 @@ diff --git a/packages/ui/src/stores/useBtwStore.test.ts b/packages/ui/src/stores
        composerModel: COMPOSER,
        composerVariant: null,
        isModelAvailable: () => false,
-@@ -180,6 +193,7 @@
+@@ -180,6 +193,7 @@ describe('btwModelAvailability', () => {
        savedAgent: 'plan',
        savedModel: AUTO,
        savedVariant: null,
@@ -2712,9 +3362,10 @@ diff --git a/packages/ui/src/stores/useBtwStore.test.ts b/packages/ui/src/stores
        composerVariant: 'high',
        isModelAvailable: btwModelAvailability(catalog, true),
 diff --git a/packages/ui/src/stores/useBtwStore.ts b/packages/ui/src/stores/useBtwStore.ts
+index 4f9e85f..a3d12b3 100644
 --- a/packages/ui/src/stores/useBtwStore.ts
 +++ b/packages/ui/src/stores/useBtwStore.ts
-@@ -29,27 +29,28 @@
+@@ -29,27 +29,28 @@ export const btwModelAvailability = (
    };
  };
  
@@ -2749,9 +3400,30 @@ diff --git a/packages/ui/src/stores/useBtwStore.ts b/packages/ui/src/stores/useB
      variant: savedUsable ? savedVariant : composerVariant,
    };
 diff --git a/packages/ui/src/sync/DOCUMENTATION.md b/packages/ui/src/sync/DOCUMENTATION.md
+index 65b82b1..8938922 100644
 --- a/packages/ui/src/sync/DOCUMENTATION.md
 +++ b/packages/ui/src/sync/DOCUMENTATION.md
-@@ -346,15 +346,22 @@
+@@ -113,6 +113,19 @@ of button visibility.
+ 
+ ## Ownership map
+ 
++Live BTW keeps one logical root session and stores the current native transcript ID in its metadata.
++`lib/liveBtw.ts` owns preparation and publishes that head after the complete snapshot import succeeds.
++The existing-session send path uses the prepared transcript before optimistic insertion and prompt admission.
++It holds a runtime-scoped preparation lock through admission.
++The native panel follows the root's head without changing the selected main session.
++Preparation loads the imported transcript through the shared message loader before publishing that head.
++An optimistic new question must not make an unmaterialized import appear complete.
++The composer owns draft migration when its transcript changes.
++Live imports persist their native transcript order in message metadata.
++The message-ordering helper uses that order before timestamps within the imported session.
++Newly admitted messages follow the imported block.
++Original message timestamps remain available for display.
++
+ Queue delivery uses `hasActiveSubagent` with an explicit parent resolver over
+ the cached sync session index. This keeps the 8-level ancestor walk shared
+ with display activity while leaving the global display resolver unchanged.
+@@ -346,15 +359,22 @@ OpenCode's commit also deletes every inbox item admitted after the boundary. Con
  
  ## Forking after an answer
  
@@ -2782,4 +3454,130 @@ diff --git a/packages/ui/src/sync/DOCUMENTATION.md b/packages/ui/src/sync/DOCUME
 +Future parent updates stay outside that snapshot.
  
  ### Why the next turn boundary and not the next record
+ 
+diff --git a/packages/ui/src/sync/message-ordering.test.ts b/packages/ui/src/sync/message-ordering.test.ts
+index 10a5425..7887096 100644
+--- a/packages/ui/src/sync/message-ordering.test.ts
++++ b/packages/ui/src/sync/message-ordering.test.ts
+@@ -23,6 +23,24 @@ const context = (id: string, created: number): Message => ({
+ })
+ 
+ describe("message chronology", () => {
++  test("keeps earlier live side questions after the new main snapshot and before the current question", () => {
++    const main = { ...message("main", 200), metadata: { openchamberLiveBtwOrder: 0 } }
++    const priorQuestion = { ...message("old-question", 100), metadata: { openchamberLiveBtwOrder: 1 } }
++    const end = { ...context("end", 300), metadata: { openchamberLiveBtwOrder: 2 } }
++    const current = message("new-question", 301)
++    expect(sortMessagesChronologically([current, end, priorQuestion, main])).toEqual([main, priorQuestion, end, current])
++    expect(priorQuestion.time.created).toBe(100)
++    const list = [main, priorQuestion, end]
++    insertMessageChronologically(list, current)
++    expect(list).toEqual([main, priorQuestion, end, current])
++  })
++
++  test("invalid live order values retain ordinary timestamp ordering", () => {
++    for (const order of [-1, Infinity, NaN, "0", 1.5]) {
++      const earlier = { ...message("earlier", 100), metadata: { openchamberLiveBtwOrder: order } }
++      expect(sortMessagesChronologically([message("later", 200), earlier])).toEqual([earlier, message("later", 200)])
++    }
++  })
+   test("orders post-rollover IDs after legacy IDs by creation time", () => {
+     const legacy = message("msg_ffffffffffffLegacy", 100)
+     const current = message("msg_000000000000Current", 200)
+diff --git a/packages/ui/src/sync/message-ordering.ts b/packages/ui/src/sync/message-ordering.ts
+index 7996e75..8e329ae 100644
+--- a/packages/ui/src/sync/message-ordering.ts
++++ b/packages/ui/src/sync/message-ordering.ts
+@@ -13,6 +13,11 @@ const getCreatedAt = (message: Message): number => {
+  */
+ const equalTimeRank = (message: Message): number => (message.role === "synthetic" ? 0 : 1)
+ 
++const liveBtwOrder = (message: Message): number | null => {
++  const value = message.metadata?.openchamberLiveBtwOrder
++  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null
++}
++
+ /**
+  * Message IDs identify records; they are not chronology. OpenCode's sortable
+  * ID timestamp rolls over, so a newly created `msg_000...` can follow a legacy
+@@ -20,6 +25,15 @@ const equalTimeRank = (message: Message): number => (message.role === "synthetic
+  * used only to make equal timestamps deterministic.
+  */
+ export const compareMessagesChronologically = (left: Message, right: Message): number => {
++  // Live imports append older side questions after a newer main snapshot.
++  // Their persisted native order keeps those questions in place without changing their displayed dates.
++  if (left.sessionID === right.sessionID) {
++    const leftOrder = liveBtwOrder(left)
++    const rightOrder = liveBtwOrder(right)
++    if (leftOrder !== null && rightOrder !== null && leftOrder !== rightOrder) return leftOrder - rightOrder
++    if (leftOrder !== null && rightOrder === null) return -1
++    if (leftOrder === null && rightOrder !== null) return 1
++  }
+   const createdAtDifference = getCreatedAt(left) - getCreatedAt(right)
+   if (createdAtDifference !== 0) return createdAtDifference
+   const rankDifference = equalTimeRank(left) - equalTimeRank(right)
+diff --git a/packages/ui/src/sync/session-ui-store.ts b/packages/ui/src/sync/session-ui-store.ts
+index ee95db7..b21288b 100644
+--- a/packages/ui/src/sync/session-ui-store.ts
++++ b/packages/ui/src/sync/session-ui-store.ts
+@@ -20,6 +20,7 @@ import type { AttachedFile, SessionWorktreeAttachment } from "@/stores/types/ses
+ import { permissionModeForNewSession, type PermissionMode } from "@/stores/utils/permissionAutoAccept"
+ import type { WorktreeMetadata } from "@/types/worktree"
+ import { opencodeClient, type SkillMentions } from "@/lib/opencode/client"
++import { isLiveBtwSession } from "@/lib/sessionBtwMetadata"
+ import { buildSkillMentionInstruction } from "@/lib/skillMentionInstruction"
+ import { runtimeFetch } from "@/lib/runtime-fetch"
+ import { useConfigStore } from "@/stores/useConfigStore"
+@@ -398,6 +399,10 @@ type SendMessageOptions = {
+   recordEffort?: boolean
+   /** Revision captured with the composer's selection, before async preparation. */
+   effortRevision?: number
++  /** The first live question already owns its newly captured main snapshot. */
++  liveBtwPrepared?: boolean
++  /** Moves a native composer's pending draft before its logical live tab follows the new transcript. */
++  onSessionRebuilt?: (sessionId: string, directory: string) => void
+ }
+ 
+ type AssistantMessageSessionExecution = {
+@@ -2423,7 +2428,18 @@ export const useSessionUIStore = create<SessionUIState>()((set, get) => ({
+       }
+ 
+       // ---- Existing session ----
+-      const targetSessionId = capturedTarget?.sessionId ?? options?.sessionId ?? get().currentSessionId
++      let targetSessionId = capturedTarget?.sessionId ?? options?.sessionId ?? get().currentSessionId
++      let liveTurn: Awaited<ReturnType<typeof import('@/lib/liveBtw')['prepareLiveBtwTurn']>> | undefined
++      const targetDirectory = capturedTarget?.directory ?? options?.directory ?? (targetSessionId ? get().getDirectoryForSession(targetSessionId) : null)
++      const targetSession = targetSessionId ? getSyncSessions(targetDirectory ?? undefined).find((session) => session.id === targetSessionId) : undefined
++      if (targetSessionId && targetDirectory && isLiveBtwSession(targetSession) && !options?.liveBtwPrepared) {
++        const { prepareLiveBtwTurn } = await import('@/lib/liveBtw')
++        liveTurn = await prepareLiveBtwTurn({ sessionId: targetSessionId, directory: targetDirectory, runtimeKey: capturedRuntimeKey })
++        targetSessionId = liveTurn.session.id
++      }
++      try {
++      if (liveTurn && !isCurrentRuntimeInstance()) throw new Error("runtime changed")
++      if (liveTurn) options?.onSessionRebuilt?.(liveTurn.session.id, liveTurn.session.directory ?? targetDirectory!)
+       const settleModelPick = targetSessionId
+         ? useSelectionStore.getState().captureSessionModelPickSettlement(targetSessionId, providerID, modelID, capturedRuntimeKey)
+         : undefined
+@@ -2491,7 +2507,7 @@ export const useSessionUIStore = create<SessionUIState>()((set, get) => ({
+       // the response style, written into the session alongside the goal write
+       // and while the optimistic message is already on screen: only the prompt
+       // request waits for it.
+-      const knowledgeSync = responseStyleInstruction
++      const knowledgeSync = !isLiveBtwSession(targetSession) && !options?.liveBtwPrepared && responseStyleInstruction
+         ? responseStyleInstruction.then((style) => syncSessionKnowledge(currentSessionDirectory, targetSessionId, style, capturedRuntimeKey))
+         : undefined
+ 
+@@ -2564,6 +2580,12 @@ export const useSessionUIStore = create<SessionUIState>()((set, get) => ({
+       }
+       // Keep restore failures outside the send promise and its retry path.
+       void resumeAfterSend?.().catch(console.warn)
++      } catch (error) {
++        if (liveTurn) throw new DraftSendError(liveTurn.session.id, liveTurn.session.directory ?? targetDirectory, true, error)
++        throw error
++      } finally {
++        liveTurn?.release()
++      }
+     })
+   },
  
