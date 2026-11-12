@@ -8,13 +8,15 @@ import { pathToFileURL } from 'node:url';
 const repo = resolve(process.env.BTW_HOST_DIR ?? '../openchamber');
 const { chromium, expect } = await import(process.env.BTW_PLAYWRIGHT_MODULE ?? '@playwright/test');
 const { OpenCode } = await import(pathToFileURL(join(repo, 'node_modules/@opencode/client/dist/promise/index.js')).href);
+const { LIVE_BTW_RPC } = await import(pathToFileURL(join(repo, 'packages/sdk/dist/btw-rpc.js')).href);
 const { startIsolatedServer } = await import(pathToFileURL(join(repo, 'scripts/perf/isolated-server.mjs')).href);
 const output = resolve(process.env.BTW_OUTPUT_DIR ?? join(tmpdir(), 'ob-btw-verification'));
 await mkdir(output, { recursive: true });
 const root = await mkdtemp(join(output, 'live-btw-'));
 const project = join(root, 'project');
 await mkdir(project);
-await writeFile(join(project, 'opencode.json'), JSON.stringify({ plugins: [resolve('plugin')] }));
+const coldSource = process.argv.includes('--cold-source');
+await writeFile(join(project, 'opencode.json'), JSON.stringify({ plugins: coldSource ? [] : [resolve('plugin')] }));
 const before = process.argv.includes('--before');
 const dist = process.env.BTW_PROOF_DIST ?? join(repo, 'packages/web/dist');
 const requests: Array<Record<string, unknown> & { messages: unknown[] }> = [];
@@ -118,16 +120,34 @@ try {
     agent: 'build', model: { providerID: 'perf', id: 'stream-300cps' } });
   await sdk.experimental.session.instructions.entry.put({ sessionID: parent.id, key: 'live-proof', value: 'KEEP_CUSTOM_PREFIX unchanged.' });
   await sdk.experimental.session.instructions.entry.put({ sessionID: parent.id, key: 'openchamber.pinned', value: 'PINNED_MAIN_REFERENCE unchanged.' });
+  const firstQuestion = 'LIVE_SIDE_FIRST: what is the current progress?';
+  if (coldSource) {
+    await sdk.session.prompt({ sessionID: parent.id, text: 'COLD_MAIN_SETUP' });
+    await sdk.experimental.session.wait({ sessionID: parent.id });
+    await writeFile(join(project, 'opencode.json'), JSON.stringify({ plugins: [resolve('plugin')] }));
+    await expect.poll(async () => {
+      try { return (await sdk.rpc(LIVE_BTW_RPC).status({}, { location: { directory: project } })).version; }
+      catch { return null; }
+    }, { timeout: 15_000 }).toBe(2);
+    await page.goto(`http://localhost:4849/?session=${parent.id}`);
+    await expect(page.locator('[data-chat-column="main"]').getByText('COLD_MAIN_SETUP', { exact: true })).toBeVisible({ timeout: 30_000 });
+    const editor = page.locator('[data-chat-column="main"] .cm-content');
+    await editor.click();
+    await page.keyboard.insertText(`/live-btw ${firstQuestion}`);
+    await page.keyboard.press('Enter');
+    await expect(page.getByText('live-btw.reserve failed: Wait for the main chat to make its next model request after enabling BTW, then send the side question again.', { exact: true })).toBeVisible();
+    await expect(editor).toHaveText(firstQuestion);
+    await page.screenshot({ path: join(output, 'live-btw-cold-source.png') });
+  }
   await sdk.session.prompt({ sessionID: parent.id, text: 'LIVE_MAIN_TASK. Work through the steps and report progress.' });
   if (before) { advanceMain?.(); finishMain?.(); await sdk.experimental.session.wait({ sessionID: parent.id }); }
-  await page.goto(`http://localhost:4849/?session=${parent.id}`);
+  if (!coldSource) await page.goto(`http://localhost:4849/?session=${parent.id}`);
   const main = page.locator('[data-chat-column="main"]');
   const side = page.locator('[data-chat-column="pinned"]');
   const sideText = (text: string) => side.locator('p:visible').filter({ hasText: text });
   await expect(main.getByText(/MAIN_PREMISE_ONE/).first()).toBeVisible({ timeout: 30_000 });
-  const firstQuestion = 'LIVE_SIDE_FIRST: what is the current progress?';
   await main.locator('.cm-content').click();
-  await page.keyboard.insertText(`/live-btw ${firstQuestion}`);
+  if (!coldSource) await page.keyboard.insertText(`/live-btw ${firstQuestion}`);
   await page.keyboard.press('Enter');
   if (before) {
     await expect.poll(() => requests.some((entry) => JSON.stringify(entry.messages).includes('/live-btw'))).toBe(true);
@@ -258,6 +278,7 @@ try {
       reopenHeadLinkAndSendThirdQuestion: 'passed', inheritedPinsPreserved: 'passed',
       emptyLiveChatDoesNotCallModel: 'passed', mainTaskRemainsRunning: true,
       permissionChoiceFollowsLogicalRoot: 'passed',
+      ...(coldSource ? { coldSourceShowsReason: true, coldSourcePreservesQuestion: true, coldSourceRetryAfterMainRequest: true } : {}),
       ...(process.argv.includes('--fail-first') ? { firstSendFailureReusesRoot: 'passed' } : {}),
       unchangedMainPrefix: inheritedPrefix === parentPrefix, parentPrefixSha256: hash(parentPrefix), inheritedPrefixSha256: hash(inheritedPrefix),
       sameRequestOptionsAndTools: true, customInstructionEntryPreserved: parentPrefix.includes('KEEP_CUSTOM_PREFIX'),

@@ -3054,10 +3054,10 @@ index d1a7f8a..df405f5 100644
    'chat.textSelection.comment.placeholder': '新增選填留言...',
    'chat.textSelection.comment.attach': '附加',
 diff --git a/packages/ui/src/lib/opencode/DOCUMENTATION.md b/packages/ui/src/lib/opencode/DOCUMENTATION.md
-index 05bf3f5..c1867de 100644
+index 05bf3f5..979f908 100644
 --- a/packages/ui/src/lib/opencode/DOCUMENTATION.md
 +++ b/packages/ui/src/lib/opencode/DOCUMENTATION.md
-@@ -7,6 +7,19 @@ to the shared UI domain model. Sync owns transcript membership and store writes.
+@@ -7,6 +7,20 @@ to the shared UI domain model. Sync owns transcript membership and store writes.
  
  ## Invariants
  
@@ -3073,11 +3073,12 @@ index 05bf3f5..c1867de 100644
 +- Earlier side reasoning and tool calls do not enter the rebuilt request.
 +- Every earlier question keeps its original main-session premise.
 +- A failed authoritative read stops preparation and preserves the previous live transcript.
++- RPC failures keep their message after the SDK unwraps the tagged HTTP error into a plain object.
 +
  - `getSessionMessage` reads only the requested session. Pins, message references
    and linked-message existence checks must retain this strict behavior.
  - `getToolContentMessage` is reserved for `completeToolContent`, which checks
-@@ -28,6 +41,16 @@ to the shared UI domain model. Sync owns transcript membership and store writes.
+@@ -28,6 +42,16 @@ to the shared UI domain model. Sync owns transcript membership and store writes.
  
  ## Decisions
  
@@ -3094,8 +3095,29 @@ index 05bf3f5..c1867de 100644
  ### Why fresh provider reads wait for post-call requests
  
  Provider, model and default-model reads share one catalog promise per directory
+diff --git a/packages/ui/src/lib/opencode/client.test.ts b/packages/ui/src/lib/opencode/client.test.ts
+index b1e6d69..1ed5b30 100644
+--- a/packages/ui/src/lib/opencode/client.test.ts
++++ b/packages/ui/src/lib/opencode/client.test.ts
+@@ -320,6 +320,16 @@ test('a drive-root system-info fallback stays absolute', async () => {
+ })
+ 
+ describe("error normalisation", () => {
++  for (const type of ["unavailable", "conflict", "rpc.unavailable"]) {
++    test(`a ${type} RPC refusal keeps its message after SDK unwrapping`, async () => {
++      const message = "Wait for the main chat to make its next model request, then send the side question again."
++      responses.push(json({ _tag: "RpcError", type, message, data: {} }, 400))
++      let error: unknown
++      try { await opencodeClient.resolveLiveBtwLink("ses_side", "/repo/rpc") } catch (caught) { error = caught }
++      expect(error).toBeInstanceOf(OpencodeApiError)
++      expect(error).toMatchObject({ operation: "live-btw.resolve", detail: message, message: `live-btw.resolve failed: ${message}` })
++    })
++  }
+   test("an invalid project config keeps its path and message reachable", async () => {
+     const body = {
+       name: "ConfigInvalidError",
 diff --git a/packages/ui/src/lib/opencode/client.ts b/packages/ui/src/lib/opencode/client.ts
-index d053386..832fb88 100644
+index d053386..ad037e4 100644
 --- a/packages/ui/src/lib/opencode/client.ts
 +++ b/packages/ui/src/lib/opencode/client.ts
 @@ -70,6 +70,8 @@ import {
@@ -3107,7 +3129,25 @@ index d053386..832fb88 100644
  import { runningShellFromWire, shellCancellationNote, type RunningShell, type ShellToStop } from "./background-shell"
  import { runningImageJobFromWire, type RunningImageJob } from "./background-image"
  import { subagentCancellationNote } from "./subagent-run"
-@@ -1139,6 +1141,55 @@ class OpencodeService {
+@@ -164,6 +166,7 @@ export class OpencodeApiError extends Error {
+ export { AgentUnavailableError }
+ 
+ const taggedErrorSchema = z.object({ _tag: z.string(), message: z.string().optional(), ref: z.string().optional() })
++const rpcMethodErrorSchema = z.object({ type: z.string(), message: z.string() })
+ 
+ class RuntimeRoutingResponseError extends Error {
+   constructor(readonly status: number, message: string) {
+@@ -225,6 +228,9 @@ export function normalizeOpencodeError(operation: string, error: unknown): Openc
+       cause: error,
+     })
+   }
++  // The RPC subclient unwraps tagged failures into plain { type, message, data } objects.
++  const rpcError = rpcMethodErrorSchema.safeParse(error)
++  if (rpcError.success) return new OpencodeApiError(operation, rpcError.data.message, { cause: error })
+   if (error instanceof Error) {
+     const wrapped = new OpencodeApiError(operation, error.message, { cause: error })
+     if (isAmbiguousTransportFailure(error)) markAmbiguousTransportFailure(wrapped)
+@@ -1139,6 +1145,55 @@ class OpencodeService {
      return projectSession(info)
    }
  

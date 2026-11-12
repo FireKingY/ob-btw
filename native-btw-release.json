@@ -1,10 +1,10 @@
 {
   "version": "2.7.0",
-  "extensionVersion": "1.5.0",
+  "extensionVersion": "1.5.1",
   "sourceBaseCommit": "183d935e9cb602ef6ce7f64cbf5f615e4d6b8048",
-  "hostPatchSha256": "edadc2a99d476f6bd6d508d859a85efa0d72ba0663101acd6f448538c52bbc2f",
-  "indexSha256": "ebcc2e4af9e9d48981d60c708885b7214822ce05c69121d51fcc414be7e2fa33",
-  "preparedAt": 1794475151770,
+  "hostPatchSha256": "4b9f4e2d414ce1900a2298d1ffba4311ccbd8cae86dddfe103921de898724c40",
+  "indexSha256": "05e49e77ed0eafd19b9b65c2eb130f01bbafbf9f0b1301e15801ecf60851615d",
+  "preparedAt": 1794476485458,
   "nativeLocalFeatures": [
     "session-activity"
   ],
@@ -17,7 +17,7 @@
     "service/main.js": "75f27cca303f1b6eccf5efba00e4cfb86a5b1e16830aa944601eb3effaaeb17f",
     "plugin/index.js": "17fcd2ff27c00dc7aee5ee03795339382240276b681531aba7c7069c4b5cd2a2"
   },
-  "sourcePatchRoundTripFiles": 84,
+  "sourcePatchRoundTripFiles": 85,
   "cleanChangedGate": "passed",
   "cleanHostAndExtensionBuilds": "passed",
   "nativeLiveThreeTurnProof": "passed",
@@ -34,5 +34,8 @@
   "newQuestionAfterClosingMarker": true,
   "liveProviderCacheMeasurement": "Earlier controlled placement experiment retained in verification/cache-read-only-live.json. Version 1.5 scenarios use real OpenCode and a deterministic provider.",
   "baselineActivation": "Live BTW needs one source model request after coordinator activation.",
-  "reviewFindingsAddressed": true
+  "reviewFindingsAddressed": true,
+  "rpcErrorMessages": "passed",
+  "coldSourceExplanationAndRetry": "passed",
+  "adapterTests": 87
 }

@@ -79,3 +79,9 @@ Draft and quotation behavior is recorded in `verification/quote-migration-proof.
 That scenario also covers selected-text insertion and undo restoration after a live rebuild.
 The ordinary BTW regression is in `verification/ordinary-snapshot-proof.json` and `verification/ordinary-prefix-proof.json`.
 Clean publication checks are recorded in `verification/release-proof.json`.
+
+Version 1.5.1 preserves the messages in RPC errors.
+The cold-source scenario enables the coordinator after the main conversation already has history.
+It checks the visible explanation, the retained draft and successful retry after the next main request.
+That retry also preserves the complete main prefix, tools and request options.
+The result is in `verification/cold-source-proof.json`.

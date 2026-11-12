@@ -1,6 +1,6 @@
 # ob-btw
 
-Native BTW side conversations for OpenChamber. Extension version **1.5.0**.
+Native BTW side conversations for OpenChamber. Extension version **1.5.1**.
 
 This revision opens each BTW with the native OpenChamber chat panel.
 The native panel owns the transcript, Markdown, code blocks, tables, tools, composer, permissions, and streaming.
@@ -49,6 +49,8 @@ It also includes `plugin/index.js` for the coordinator.
 After the coordinator loads, live conversations require one model request from their source main chat.
 That request records the main chat's actual system baseline.
 For an already running main chat, its next tool continuation or user turn supplies that baseline.
+If the baseline is missing, the error explains this requirement and the question remains in the composer.
+RPC errors retain the coordinator's message in version 1.5.1.
 
 ## Use
 
@@ -222,6 +224,7 @@ The script starts isolated OpenChamber, OpenCode, and fixture-provider instances
 node scripts/native-live-snapshot.ts
 node scripts/native-live-btw.ts
 node scripts/native-live-btw.ts --fail-first
+node scripts/native-live-btw.ts --cold-source
 node scripts/quote-migration-proof.ts
 bun scripts/coordinator-proof.ts
 ```

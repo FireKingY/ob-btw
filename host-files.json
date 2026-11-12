@@ -64,6 +64,7 @@
     "packages/ui/src/lib/liveBtwPrompts.ts",
     "packages/ui/src/lib/opencode/DOCUMENTATION.md",
     "packages/ui/src/lib/opencode/client.ts",
+    "packages/ui/src/lib/opencode/client.test.ts",
     "packages/ui/src/lib/opencode/ids.ts",
     "packages/ui/src/lib/opencode/live-btw-context.test.ts",
     "packages/ui/src/lib/opencode/live-btw-context.ts",
