@@ -18,7 +18,8 @@ const prefix = `${run}\nSynthetic reference records for a cache experiment:\n` +
 const source = await readFile(join(repo, 'packages/ui/src/lib/btw.ts'), 'utf8');
 const boundary = source.match(/export const BTW_HISTORY_BOUNDARY = `([\s\S]*?)`;/)?.[1];
 if (!boundary) throw new Error('The installed source has no fixed history boundary.');
-const readOnlyInstruction = source.match(/export const BTW_READ_ONLY_INSTRUCTION = `([\s\S]*?)`;/)?.[1];
+const readOnlySource = await readFile(join(repo, 'packages/ui/src/lib/btwReadOnly.ts'), 'utf8');
+const readOnlyInstruction = readOnlySource.match(/export const BTW_READ_ONLY_INSTRUCTION = `([\s\S]*?)`;/)?.[1];
 if (readOnly && !readOnlyInstruction) throw new Error('The source has no fixed read-only instruction.');
 const policy = readOnly ? `${boundary}\n\n${readOnlyInstruction}` : boundary;
 const parent = [{ role: 'user', content: prefix }];

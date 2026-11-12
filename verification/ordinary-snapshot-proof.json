@@ -1,0 +1,10 @@
+{
+  "inheritedPartialProgress": true,
+  "inheritedIDsPreserved": false,
+  "firstRunningTurnSideQuestion": "passed",
+  "latestSnapshotOnNextFork": "passed",
+  "oldSnapshotDoesNotFollowParent": "passed",
+  "mainTaskRemainsRunning": true,
+  "nativeFocus": "passed",
+  "errors": []
+}

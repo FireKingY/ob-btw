@@ -1,0 +1,20 @@
+{
+  "serverCoordination": "passed",
+  "concurrentWriters": "one accepted, one refused",
+  "activeLeaseBlocksAnotherClient": true,
+  "originalSystemBaselineAfterInstructionUpdate": true,
+  "unchangedMainMessagesPrefix": true,
+  "unchangedToolsAndOptions": true,
+  "automationMetadataExcluded": true,
+  "productionPinsPreserved": true,
+  "retiredSnapshotsEmpty": true,
+  "oldMessageLinksResolve": true,
+  "repeatedPremiseDeduplicated": true,
+  "nativeHistoryRetained": true,
+  "retiredAliasCountPerTurn": 2,
+  "expiredAndRetiredPromptsRejected": true,
+  "runtimeSwitchForkCleanup": true,
+  "failedMaterializationCleanup": true,
+  "ordinaryBtwPrefixPreserved": true,
+  "scope": "Real OpenCode plugin RPC and model serialization, synthetic deterministic provider. No live-provider cache ratio measured."
+}

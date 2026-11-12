@@ -1,99 +1,38 @@
 {
   "version": "2.7.0",
+  "extensionVersion": "1.5.0",
   "sourceBaseCommit": "183d935e9cb602ef6ce7f64cbf5f615e4d6b8048",
-  "indexSha256": "b304977f45533c1d3f8a910eaf4b4f4d743035d318fb9fd95afb0a6cb71460d6",
-  "hostPatchSha256": "7f73303e6746a1ab3ea7e2574479ec2f940ea81802cf542c769855457a180c72",
-  "preparedAt": 1794400058307,
-  "extensionVersion": "1.4.0",
-  "nativeInteractionProof": "passed",
-  "nativeFeaturesProof": "passed",
-  "focusWithQuestionProof": "passed",
-  "publicPromptMatches": true,
-  "finalModelRequestOrder": "passed",
-  "unchangedParentRequestPrefix": true,
-  "liveCacheProof": {
-    "model": "codex/gpt-6.1-sol",
-    "results": [
-      {
-        "name": "parent-cold",
-        "inputTokens": 10047,
-        "cachedTokens": 3968,
-        "cacheHitPercent": 39.49,
-        "outputTokens": 5,
-        "elapsedMs": 3214
-      },
-      {
-        "name": "parent-repeat",
-        "inputTokens": 10047,
-        "cachedTokens": 9856,
-        "cacheHitPercent": 98.1,
-        "outputTokens": 5,
-        "elapsedMs": 2519
-      },
-      {
-        "name": "side-boundary-at-tail",
-        "inputTokens": 10466,
-        "cachedTokens": 9856,
-        "cacheHitPercent": 94.17,
-        "outputTokens": 5,
-        "elapsedMs": 2609
-      },
-      {
-        "name": "side-tail-repeat",
-        "inputTokens": 10466,
-        "cachedTokens": 10240,
-        "cacheHitPercent": 97.84,
-        "outputTokens": 5,
-        "elapsedMs": 1763
-      },
-      {
-        "name": "boundary-at-front-control",
-        "inputTokens": 10470,
-        "cachedTokens": 3968,
-        "cacheHitPercent": 37.9,
-        "outputTokens": 5,
-        "elapsedMs": 2744
-      }
-    ],
-    "scope": "Controlled live-provider placement test with synthetic reference text; not an end-to-end UI cache measurement."
-  },
-  "latestServerSnapshot": true,
-  "firstRunningTurnProof": "passed",
-  "mainTaskContinuesProof": "passed",
-  "newForkGetsNewProgressProof": "passed",
-  "legacySnapshotCompatibility": "passed",
-  "visualProof": "Chinese light/dark and Arabic RTL passed",
+  "hostPatchSha256": "edadc2a99d476f6bd6d508d859a85efa0d72ba0663101acd6f448538c52bbc2f",
+  "indexSha256": "ebcc2e4af9e9d48981d60c708885b7214822ce05c69121d51fcc414be7e2fa33",
+  "preparedAt": 1794475151770,
+  "nativeLocalFeatures": [
+    "session-activity"
+  ],
   "retainedLocalHtmlSections": [
+    "markdown-math:presentation",
     "file-link-menu"
   ],
-  "sameAgentProof": {
-    "parentAgent": "build",
-    "sideAgent": "build",
-    "sameModel": true,
-    "sameToolDefinitions": true,
-    "parentMessageCount": 4,
-    "commonPrefixMessages": 4,
-    "parentPrefixSha256": "39120967f94376542f68c023f42aa236e643b92189c9d28db41a3d8568319feb",
-    "inheritedPrefixSha256": "39120967f94376542f68c023f42aa236e643b92189c9d28db41a3d8568319feb",
-    "unchangedParentPrefix": true,
-    "differingOptionKeys": [],
-    "readOnlyMessageIndex": 5,
-    "readOnlyInstructionPresent": true,
-    "followup": {
-      "unchangedParentPrefix": true,
-      "unchangedPreviousSideRequestPrefix": true,
-      "sameToolDefinitions": true,
-      "unchangedOptions": true,
-      "readOnlyReminderPresent": true
-    }
+  "bundleSha256": {
+    "panel/main.js": "b8c36b86f855c4e385be7c2042ebaf7ec3f8f531f746bafd4a7f37974e43f7c1",
+    "service/main.js": "75f27cca303f1b6eccf5efba00e4cfb86a5b1e16830aa944601eb3effaaeb17f",
+    "plugin/index.js": "17fcd2ff27c00dc7aee5ee03795339382240276b681531aba7c7069c4b5cd2a2"
   },
-  "readOnlyPromptAtTail": true,
-  "sourcePatchRoundTripFiles": 53,
-  "independentReview": "No actionable findings in the same-agent and read-only prompt change.",
-  "liveBtwProof": "passed",
-  "liveBtwPrefixProof": "passed",
-  "liveBtwReplayProof": "passed",
-  "liveBtwFailureRecoveryProof": "passed",
-  "liveBtwReloadProof": "passed",
-  "liveBtwReopenHeadProof": "passed"
+  "sourcePatchRoundTripFiles": 84,
+  "cleanChangedGate": "passed",
+  "cleanHostAndExtensionBuilds": "passed",
+  "nativeLiveThreeTurnProof": "passed",
+  "nativeFirstSendRecovery": "passed",
+  "nativeQuoteAndUndoProof": "passed",
+  "nativeOrdinarySnapshotProof": "passed",
+  "crossClientCoordination": "passed",
+  "expiredAndRetiredPromptsRejected": true,
+  "oldMessageLinksResolve": true,
+  "retiredTranscriptCleanup": "passed",
+  "mainSystemAfterInstructionUpdate": "unchanged",
+  "mainMessagesPrefix": "unchanged",
+  "toolsAndRequestOptions": "unchanged",
+  "newQuestionAfterClosingMarker": true,
+  "liveProviderCacheMeasurement": "Earlier controlled placement experiment retained in verification/cache-read-only-live.json. Version 1.5 scenarios use real OpenCode and a deterministic provider.",
+  "baselineActivation": "Live BTW needs one source model request after coordinator activation.",
+  "reviewFindingsAddressed": true
 }

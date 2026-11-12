@@ -1,0 +1,21 @@
+{
+  "parentAgent": "build",
+  "sideAgent": "build",
+  "sameModel": true,
+  "sameToolDefinitions": true,
+  "parentMessageCount": 4,
+  "commonPrefixMessages": 4,
+  "parentPrefixSha256": "0997e23d208b1e8e80561c73352d9b0226d9e01e6894b74994b6d5e515b345df",
+  "inheritedPrefixSha256": "0997e23d208b1e8e80561c73352d9b0226d9e01e6894b74994b6d5e515b345df",
+  "unchangedParentPrefix": true,
+  "differingOptionKeys": [],
+  "readOnlyMessageIndex": 5,
+  "readOnlyInstructionPresent": true,
+  "followup": {
+    "unchangedParentPrefix": true,
+    "unchangedPreviousSideRequestPrefix": true,
+    "sameToolDefinitions": true,
+    "unchangedOptions": true,
+    "readOnlyReminderPresent": true
+  }
+}

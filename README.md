@@ -1,6 +1,6 @@
 # ob-btw
 
-Native BTW side conversations for OpenChamber. Extension version **1.4.0**.
+Native BTW side conversations for OpenChamber. Extension version **1.5.0**.
 
 This revision opens each BTW with the native OpenChamber chat panel.
 The native panel owns the transcript, Markdown, code blocks, tables, tools, composer, permissions, and streaming.
@@ -17,6 +17,10 @@ The source build uses the companion SDK source through `tsconfig.json`.
 The package keeps the required SDK dependency at `2.7.0`.
 The compiled scripts need no source checkout at runtime.
 Live context rebuilds require OpenCode 2.2.6, which the target host bundles.
+The extension includes an OpenCode coordinator plugin.
+Its capability must be approved in **Settings > Extensions**.
+Managed OpenCode loads that plugin through its watched configuration.
+The coordinator registers no model tools.
 
 Without the host change, the extension shows the missing capability and leaves the current chat selected.
 
@@ -40,6 +44,11 @@ bun run build:web
 Run or package the patched checkout with the [OpenChamber build instructions](https://github.com/openchamber/openchamber).
 In that host, open **Settings > Extensions** and add the local `ob-btw` folder.
 The repository includes the compiled panel and service scripts.
+It also includes `plugin/index.js` for the coordinator.
+
+After the coordinator loads, live conversations require one model request from their source main chat.
+That request records the main chat's actual system baseline.
+For an already running main chat, its next tool continuation or user turn supplies that baseline.
 
 ## Use
 
@@ -74,10 +83,10 @@ The side chat shows the creation time of its snapshot.
 Older forks retain their completed-answer timestamp and source link.
 Older side chats show a snapshot label without a time.
 Each prompt states that inherited tasks are reference context.
-Later messages in the parent do not automatically enter the side chat.
-Create another side chat to capture newer progress.
-Live side chats capture that newer progress when the next question is sent.
-Each new fork receives the public Codex boundary prompt after its inherited history.
+Ordinary BTW keeps its original parent snapshot.
+Create another ordinary side chat to capture newer progress.
+For each new question, live side chats capture that newer progress.
+Each ordinary fork receives the public Codex boundary prompt after its inherited history.
 This note does not start model execution.
 Later prompts keep the existing reminder without moving that boundary.
 
@@ -122,18 +131,32 @@ The next rebuild retains its final answer.
 
 Each question keeps the main-session premise captured before its original delivery.
 New main progress does not rewrite that premise.
-The context refresh runs when a question is sent.
+Each question starts a context refresh before delivery.
 Opening an empty live side chat sends no model request.
 An active live answer must finish before another question is sent.
 
 The panel keeps one logical tab while the host prepares a new native transcript for each question.
-Draft text and attachments typed during preparation move to that transcript.
+Draft text, attachments, linked items and context chips belong to that logical conversation.
+Changing the execution transcript keeps the draft identity.
 Reloading or reopening a session link follows the current transcript.
 A failed snapshot read preserves the previous conversation and restores the unsent question.
+If the first model send fails, the prepared side conversation opens with its draft for retry.
+
+The coordinator reserves each live conversation across clients.
+An expired reservation cannot admit a prompt into an old transcript.
+Permission choices belong to the logical root and continue across context rebuilds.
+After successful admission, old execution transcripts are cleared with a transcript-only revert.
+Files remain intact.
+Small redirect records preserve stable session and message links.
+Repeated main-session premises share their text across forks with different message IDs.
 
 The rebuild also copies the main session's instruction entries.
 The normal knowledge-sync path leaves those captured entries unchanged for a live send.
-This preserves the parent prefix when the main chat has pinned notes or other session instructions.
+The coordinator restores the original system baseline before model dispatch.
+Main instruction updates stay in their original history positions.
+This preserves the parent prefix after pinned notes or other session instructions change.
+The same agent, provider and model are required for that shared prefix.
+Source Goal mode, review links and approvals do not become side-conversation control state.
 
 The live cache experiment uses the same boundary text, read-only instruction, and synthetic reference records.
 Its results come from the provider's reported input and cached token counts.
@@ -162,6 +185,23 @@ bunx openchamber-guest-check
 
 Build the companion SDK before building the extension.
 Ship `panel/main.js` and `service/main.js` with the package.
+Ship `plugin/index.js` and its `package.json` too.
+
+## Maintainer release check
+
+`host-files.json` lists the source files in the companion patch.
+The generator includes new files even before Git tracks them.
+The release check reconstructs a clean host from the pinned upstream commit.
+It compares the reconstructed source, builds that host and builds the extension against its SDK.
+The source checks include types, lint, unused code and the repository change gate.
+
+```bash
+node scripts/build-host-patch.mjs
+node scripts/verify-release.mjs
+```
+
+Set `BUN_BIN` to use a specific Bun executable for the release check.
+The result is recorded in `verification/release-proof.json`.
 
 ## Verification
 
@@ -181,6 +221,9 @@ The script starts isolated OpenChamber, OpenCode, and fixture-provider instances
 ```bash
 node scripts/native-live-snapshot.ts
 node scripts/native-live-btw.ts
+node scripts/native-live-btw.ts --fail-first
+node scripts/quote-migration-proof.ts
+bun scripts/coordinator-proof.ts
 ```
 
 The cache script requires a Responses API endpoint.

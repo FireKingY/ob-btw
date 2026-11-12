@@ -1,6 +1,8 @@
 # Side-chat cache verification
 
-The test uses `codex/gpt-6.1-sol` through the local Magpie Responses API.
+The earlier placement test used `codex/gpt-6.1-sol` through the local Magpie Responses API.
+Version 1.5 uses the same boundary placement.
+Its new scenarios measure request equality with a deterministic provider.
 The requests use synthetic reference records, the exact public Codex boundary text, and the current read-only instruction.
 The boundary matches the pinned [public source](https://github.com/openai/codex/blob/8703d32bd0ea5cf26768859a3dd476df906ba053/codex-rs/context-fragments/src/side_conversation.rs).
 
@@ -22,7 +24,7 @@ The front control uses one additional user-message envelope.
 The report retains the input counts for each case.
 
 These calls go directly to the live provider gateway.
-Separate browser tests use real OpenCode to verify the stored transcript order and composer focus.
+Separate browser tests use real OpenCode to examine the stored transcript order and composer focus.
 Those tests cover `/btw`, `/btw question`, the menu, the shortcut, and selected text.
 A recording provider also examines the final requests from real OpenCode and the native OpenChamber UI.
 The main conversation runs as Build, and the new side chat also uses Build.
@@ -63,3 +65,17 @@ It also covers draft migration, reload, session links and snapshot-read failure.
 
 The live replay comparison is separate from the controlled provider cache measurements in this report.
 The script uses a deterministic fixture provider and does not measure a live provider's cache ratio.
+Version 1.5 adds a coordinator inside OpenCode.
+Its context hook captures the main request's system baseline.
+The native adapter still lets OpenCode serialize all inherited messages.
+The coordinator restores the captured baseline for the same agent, provider and model.
+
+The coordinator scenario changes an instruction entry after the first main request.
+The next main request retains the original system baseline and carries the update in history.
+Both live BTW and ordinary BTW preserve that complete main prefix in the recorded provider request.
+The scenario also checks concurrent clients, expired sends, snapshot cleanup and stable message links.
+The results are in `verification/coordinator-proof.json`.
+Draft and quotation behavior is recorded in `verification/quote-migration-proof.json`.
+That scenario also covers selected-text insertion and undo restoration after a live rebuild.
+The ordinary BTW regression is in `verification/ordinary-snapshot-proof.json` and `verification/ordinary-prefix-proof.json`.
+Clean publication checks are recorded in `verification/release-proof.json`.

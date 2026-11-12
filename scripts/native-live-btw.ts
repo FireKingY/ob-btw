@@ -14,6 +14,7 @@ await mkdir(output, { recursive: true });
 const root = await mkdtemp(join(output, 'live-btw-'));
 const project = join(root, 'project');
 await mkdir(project);
+await writeFile(join(project, 'opencode.json'), JSON.stringify({ plugins: [resolve('plugin')] }));
 const before = process.argv.includes('--before');
 const dist = process.env.BTW_PROOF_DIST ?? join(repo, 'packages/web/dist');
 const requests: Array<Record<string, unknown> & { messages: unknown[] }> = [];
@@ -76,15 +77,25 @@ const browser = await chromium.launch({ executablePath: process.env.BTW_CHROME_E
   args: ['--disable-features=MacAppCodeSignClone'] });
 const page = await browser.newPage({ viewport: { width: 1800, height: 1040 } });
 const errors: string[] = [];
+const permissionWrites: string[] = [];
 page.on('pageerror', (error) => errors.push(error.message));
+page.on('request', (request) => {
+  if (request.method() === 'PUT' && request.url().includes('/permission-auto-accept/sessions/')) permissionWrites.push(new URL(request.url()).pathname.split('/').at(-1)!);
+});
 let delayImport = false;
 let importWaiting = false;
 let releaseImport: (() => void) | undefined;
 let failContext = false;
+let failFirstPrompt = process.argv.includes('--fail-first');
 const importGate = new Promise<void>((resolve) => { releaseImport = resolve; });
 await page.route('**/*', async (route) => {
   const request = route.request();
   const pathname = new URL(request.url()).pathname;
+  if (failFirstPrompt && request.method() === 'POST' && pathname.endsWith('/prompt') && request.postData()?.includes('LIVE_SIDE_FIRST')) {
+    failFirstPrompt = false;
+    await route.fulfill({ status: 400, contentType: 'application/json', body: '{"error":"Synthetic first-send refusal"}' });
+    return;
+  }
   if (failContext && request.method() === 'GET' && pathname.endsWith('/context')) {
     failContext = false;
     await route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"Reference temporarily unavailable"}' });
@@ -101,8 +112,9 @@ await page.route('**/*', async (route) => {
 try {
   server = await startIsolatedServer({ repo, dist, state: join(root, 'state'), project, port: 4849, fixturePort: 4848, logFile: join(root, 'server.log') });
   const sdk = OpenCode.make({ baseUrl: 'http://localhost:4849', headers: { 'x-opencode-directory': encodeURIComponent(project) } });
+  await sdk.model.list();
   const pins = { notes: ['synthetic-note-for-prefix'], plans: [] };
-  const parent = await sdk.session.create({ location: { directory: project }, title: 'Live BTW main task', metadata: { project_context_pins: pins },
+  const parent = await sdk.session.create({ location: { directory: project }, title: 'Live BTW main task', metadata: { openchamber: { project_context_pins: pins } },
     agent: 'build', model: { providerID: 'perf', id: 'stream-300cps' } });
   await sdk.experimental.session.instructions.entry.put({ sessionID: parent.id, key: 'live-proof', value: 'KEEP_CUSTOM_PREFIX unchanged.' });
   await sdk.experimental.session.instructions.entry.put({ sessionID: parent.id, key: 'openchamber.pinned', value: 'PINNED_MAIN_REFERENCE unchanged.' });
@@ -123,13 +135,32 @@ try {
     console.log('Before: /live-btw reaches the main model as plain text and opens no side conversation.');
   } else {
     await expect(side).toBeVisible({ timeout: 30_000 });
+    if (process.argv.includes('--fail-first')) {
+      await expect(side.locator('.cm-content')).toHaveText(firstQuestion);
+      const preparedBeforeRetry = await side.getAttribute('data-chat-session-id');
+      const rootBeforeRetry = (await sdk.session.get({ sessionID: preparedBeforeRetry })).metadata.openchamber.btwLiveRootSessionID;
+      await side.locator('.cm-content').click();
+      await page.keyboard.press('Enter');
+      await expect(side).not.toHaveAttribute('data-chat-session-id', preparedBeforeRetry);
+      const afterRetry = await side.getAttribute('data-chat-session-id');
+      expect((await sdk.session.get({ sessionID: afterRetry })).metadata.openchamber.btwLiveRootSessionID).toBe(rootBeforeRetry);
+    }
     await expect(sideText('FIRST_FORMAL_ANSWER: The main task is still running.')).toBeVisible({ timeout: 30_000 });
     await expect(sideText(firstQuestion)).toBeVisible();
     expect(await side.getByText('LIVE_MAIN_TASK. Work through the steps and report progress.', { exact: true }).count()).toBe(0);
     expect(await side.getByText('MAIN_PREMISE_ONE', { exact: true }).count()).toBe(0);
-    const rootSessionID = await side.getAttribute('data-chat-session-id');
-    if (!rootSessionID) throw new Error('The first live conversation has no session ID.');
-    const firstNative = await sdk.session.context({ sessionID: rootSessionID });
+    const firstSessionID = await side.getAttribute('data-chat-session-id');
+    if (!firstSessionID) throw new Error('The first live conversation has no session ID.');
+    const rootSessionID = (await sdk.session.get({ sessionID: firstSessionID })).metadata.openchamber.btwLiveRootSessionID;
+    const permissionButton = side.getByRole('button', { name: /^Permissions:/ });
+    const writesBeforeChoice = permissionWrites.length;
+    const permissionBefore = await permissionButton.getAttribute('aria-label');
+    await permissionButton.click();
+    await expect.poll(() => permissionWrites.length).toBeGreaterThan(writesBeforeChoice);
+    expect(permissionWrites.at(-1)).toBe(rootSessionID);
+    await expect(permissionButton).not.toHaveAttribute('aria-label', permissionBefore!);
+    const selectedPermission = await permissionButton.getAttribute('aria-label');
+    const firstNative = await sdk.session.context({ sessionID: firstSessionID });
     const firstBasis = firstNative.find((message) => message.metadata?.openchamberLiveBtwEnd)?.metadata?.openchamberLiveBtwBasis;
     expect(firstBasis).toMatchObject({ completed: true });
     expect(firstBasis.text).toContain('MAIN_PREMISE_ONE');
@@ -156,7 +187,8 @@ try {
     expect(await sideText('FIRST_SIDE_WORK_SHOULD_DROP').count()).toBe(0);
     expect(await side.getByText('LIVE_MAIN_TASK. Work through the steps and report progress.', { exact: true }).count()).toBe(0);
     const currentHead = await side.getAttribute('data-chat-session-id');
-    expect(currentHead).not.toBe(rootSessionID);
+    await expect(permissionButton).toHaveAttribute('aria-label', selectedPermission!);
+    expect(currentHead).not.toBe(firstSessionID);
     const sideWire = requests.find((entry) => JSON.stringify(entry.messages).includes('LIVE_SIDE_SECOND'))!;
     const inheritedPrefix = JSON.stringify(sideWire.messages.slice(0, parentWire.messages.length));
     const parentPrefix = JSON.stringify(parentWire.messages);
@@ -181,7 +213,7 @@ try {
     const oldRoot = await sdk.session.get({ sessionID: rootSessionID });
     expect(oldRoot.metadata?.openchamber?.btwLiveHeadSessionID).toBe(currentHead);
     expect((await sdk.session.get({ sessionID: currentHead! })).parentID).toBe(rootSessionID);
-    expect((await sdk.session.get({ sessionID: currentHead! })).metadata?.project_context_pins).toEqual(pins);
+    expect((await sdk.session.get({ sessionID: currentHead! })).metadata?.openchamber?.project_context_pins).toEqual(pins);
     expect(parentPrefix).toContain('PINNED_MAIN_REFERENCE');
     expect(new URL(page.url()).searchParams.get('session')).toBe(parent.id);
     await page.reload();
@@ -225,6 +257,8 @@ try {
       sameLogicalTab: 'passed', draftDuringPreparation: 'passed', reload: 'passed', failedSnapshotPreservesConversation: 'passed',
       reopenHeadLinkAndSendThirdQuestion: 'passed', inheritedPinsPreserved: 'passed',
       emptyLiveChatDoesNotCallModel: 'passed', mainTaskRemainsRunning: true,
+      permissionChoiceFollowsLogicalRoot: 'passed',
+      ...(process.argv.includes('--fail-first') ? { firstSendFailureReusesRoot: 'passed' } : {}),
       unchangedMainPrefix: inheritedPrefix === parentPrefix, parentPrefixSha256: hash(parentPrefix), inheritedPrefixSha256: hash(inheritedPrefix),
       sameRequestOptionsAndTools: true, customInstructionEntryPreserved: parentPrefix.includes('KEEP_CUSTOM_PREFIX'),
       newQuestionAfterClosingMarker: true, scope: 'Real OpenCode and native UI with a deterministic provider and synthetic conversations.', errors };

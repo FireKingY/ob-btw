@@ -1,0 +1,13 @@
+{
+  "sourceBaseCommit": "183d935e9cb602ef6ce7f64cbf5f615e4d6b8048",
+  "patchSha256": "edadc2a99d476f6bd6d508d859a85efa0d72ba0663101acd6f448538c52bbc2f",
+  "verifiedSourceFiles": 84,
+  "cleanPatchReconstruction": "passed",
+  "cleanHostTypecheck": "passed",
+  "cleanHostChangedGate": "passed",
+  "cleanHostBuild": "passed",
+  "cleanExtensionBuild": "passed",
+  "cleanExtensionTypecheck": "passed",
+  "extensionManifest": "passed",
+  "scope": "Pinned upstream source plus public host.patch. Workspace links resolve to the reconstructed source; third-party dependencies are reused."
+}

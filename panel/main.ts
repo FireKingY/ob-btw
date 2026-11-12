@@ -1,5 +1,6 @@
 import { connectHost, type GuestSessionRecord } from '@openchamber/sdk';
 import { applyHostReady, mountBanner, mountButton, mountEmpty, mountList, type BannerHandle, type ListHandle } from '@openchamber/sdk/ui';
+import { isListedBtw, readLegacySessions, type LegacyThread } from './sessions';
 
 const host = connectHost();
 const actions = document.querySelector('#actions')!;
@@ -10,8 +11,9 @@ let list: ListHandle | null = null;
 let directory: string | null = null;
 let generation = 0;
 let unsubscribe: (() => void) | null = null;
-let legacy: { sessionId: string; title: string; sourceTitle?: string }[] = [];
+let legacy: LegacyThread[] = [];
 let native: GuestSessionRecord[] = [];
+let explicitMetadata = false;
 
 function showError(error: unknown) {
   banner?.dispose();
@@ -44,13 +46,17 @@ async function load() {
   const revision = ++generation;
   const scope = directory;
   unsubscribe?.(); unsubscribe = null;
+  banner?.dispose(); banner = null;
   if (!scope) { paint(); return; }
-  try {
+  const legacyTask = async () => {
     const result = await host.serviceRequest({ method: 'GET', path: '/sessions', query: { directory: scope } });
     const content = JSON.parse(result.body);
     if (result.status !== 200) throw new Error(content.error ?? '无法读取已有 BTW。');
     if (revision !== generation) return;
-    legacy = content.sessions;
+    legacy = readLegacySessions(content);
+    paint();
+  };
+  const nativeTask = async () => {
     const projects = await host.listProjects();
     if (revision !== generation) return;
     const project = projects.projects.filter((entry) => scope === entry.directory || scope.startsWith(`${entry.directory}/`))
@@ -58,18 +64,23 @@ async function load() {
     if (project) {
       const stop = await host.onSessions(project.id, (snapshot) => {
         if (revision !== generation || snapshot.kind !== 'sessions') return;
-        native = snapshot.sessions.filter((entry) => !entry.archivedAt && /^(?:live-)?btw(?::|$)/i.test(entry.title));
+        native = snapshot.sessions.filter((entry) => isListedBtw(entry, explicitMetadata));
         paint();
       });
       if (revision !== generation) stop();
       else unsubscribe = stop;
-    }
+    } else native = [];
     paint();
-  } catch (error) { if (revision === generation) showError(error); }
+  };
+  await Promise.allSettled([legacyTask, nativeTask].map(async (run) => {
+    try { await run(); }
+    catch (error) { if (revision === generation) { showError(error); paint(); } }
+  }));
 }
 
 host.onReady((next) => {
   applyHostReady(next, document.documentElement);
+  explicitMetadata = Boolean(next.features?.btwMetadata);
   if (!next.features?.sideChat) {
     showError(new Error('此宿主尚未提供扩展调用原生侧边聊天的接口。请先应用随附的宿主补丁。现有聊天可从会话菜单选择「在侧边面板中打开」。'));
     return;
@@ -77,6 +88,7 @@ host.onReady((next) => {
   if (directory === next.directory) return;
   directory = next.directory;
   legacy = []; native = [];
+  paint();
   void load();
 });
 

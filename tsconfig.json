@@ -2,7 +2,10 @@
   "compilerOptions": {
     // Environment setup & latest features
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "paths": { "@openchamber/sdk": ["../openchamber/packages/sdk/src/index.ts"] },
+    "paths": {
+      "@openchamber/sdk": ["../openchamber/packages/sdk/src/index.ts"],
+      "@opencode/client": ["../openchamber/node_modules/@opencode/client/dist/promise/index.d.ts"]
+    },
     "target": "ESNext",
     "module": "Preserve",
     "moduleDetection": "force",
@@ -27,5 +30,5 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
   },
-  "include": ["panel/**/*.ts", "service/**/*.ts"]
+  "include": ["panel/**/*.ts", "service/**/*.ts", "plugin/**/*.ts"]
 }

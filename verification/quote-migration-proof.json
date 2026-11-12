@@ -1,0 +1,9 @@
+{
+  "nativeQuoteMigration": "passed",
+  "sentReferenceNotRestored": true,
+  "newReferenceKeptOnLogicalRoot": true,
+  "executionDraftSlotsEmpty": true,
+  "selectedTextReachesLogicalComposer": true,
+  "undoRestoresLogicalComposer": true,
+  "scope": "Native UI with real OpenCode and a deterministic provider."
+}
