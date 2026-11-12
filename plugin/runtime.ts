@@ -65,10 +65,7 @@ export function createCoordinator(ctx: CoordinatorContext) {
   };
   const prefixOf = async (sessionID: string) => {
     const saved = object(await ctx.storage.get(`prefix/${sessionID}`));
-    if (!Array.isArray(saved.system) || !text(saved.agent) || !text(object(saved.model).id)) {
-      throw new Refusal('unavailable', 'Wait for the main chat to make its next model request after enabling BTW, then send the side question again.');
-    }
-    return saved;
+    return Array.isArray(saved.system) && text(saved.agent) && text(object(saved.model).id) ? saved : null;
   };
   const leaseOf = (root: SessionInfo, token: unknown) => {
     const lease = object(namespace(root).btwLiveLease);
@@ -86,7 +83,6 @@ export function createCoordinator(ctx: CoordinatorContext) {
     } else {
       const source = await owned(String(input.parentSessionID ?? ''));
       const parent = live(source) ? await owned(String(namespace(source).originalSessionID)) : source;
-      await prefixOf(parent.id);
       const metadata = sideMetadata(parent, parent.id, '');
       object(metadata.openchamber).btwLiveLease = { token, expiresAt: Date.now() + LEASE_MS };
       root = await ctx.session.create({ location: parent.location, title: 'live-btw', agent: parent.agent, model: parent.model, metadata });
@@ -119,7 +115,8 @@ export function createCoordinator(ctx: CoordinatorContext) {
         const parentSessionID = String(namespace(root).originalSessionID);
         const prefix = await prefixOf(parentSessionID);
         prefixWritten = true;
-        await ctx.storage.set(`lease-prefix/${root.id}`, prefix);
+        // An empty record selects native system assembly and replaces any abandoned reservation's prefix.
+        await ctx.storage.set(`lease-prefix/${root.id}`, prefix ?? {});
         await update(root.id, { btwLiveRootSessionID: root.id, btwLiveLease: {
           token, requestID: String(input.requestID), previousSessionID, expiresAt: Date.now() + LEASE_MS, created,
         } });
@@ -145,11 +142,13 @@ export function createCoordinator(ctx: CoordinatorContext) {
       throw new Refusal('conflict', 'The prepared snapshot does not belong to this conversation.');
     }
     const prefix = object(await ctx.storage.get(`lease-prefix/${root.id}`));
-    const latest = await prefixOf(String(namespace(root).originalSessionID));
-    if (!Array.isArray(prefix.system) || JSON.stringify(prefix.system) !== JSON.stringify(latest.system)) {
-      throw new Refusal('conflict', 'The main chat changed its instruction baseline during capture. Send the question again.');
+    if (Array.isArray(prefix.system)) {
+      const latest = await prefixOf(String(namespace(root).originalSessionID));
+      if (!latest || JSON.stringify(prefix.system) !== JSON.stringify(latest.system)) {
+        throw new Refusal('conflict', 'The main chat changed its instruction baseline during capture. Send the question again.');
+      }
+      await ctx.storage.set(`head-prefix/${prepared.id}`, prefix);
     }
-    await ctx.storage.set(`head-prefix/${prepared.id}`, prefix);
     const pending = namespace(root).btwLiveRetire;
     await update(root.id, { btwLiveHeadSessionID: prepared.id,
       btwLiveRetire: [...new Set([...(Array.isArray(pending) ? pending : []), String(lease.previousSessionID)])],
@@ -249,7 +248,7 @@ export function createCoordinator(ctx: CoordinatorContext) {
     }
   };
   return {
-    methods: { reserve: method(reserve), publish: method(publish), track: method(track), finish: method(finish), retired: method(retired), resolve: method(resolve), snapshot: method(snapshot), status: method(async () => ({ version: 2, prefixCapture: true })) },
+    methods: { reserve: method(reserve), publish: method(publish), track: method(track), finish: method(finish), retired: method(retired), resolve: method(resolve), snapshot: method(snapshot), status: method(async () => ({ version: 2, prefixCapture: true, requiresMainRequest: false })) },
     prompt: async (event: { sessionID: string; messageID: string }) => {
       const session = await owned(event.sessionID);
       if (!live(session)) return;

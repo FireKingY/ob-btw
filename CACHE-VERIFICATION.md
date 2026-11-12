@@ -80,8 +80,15 @@ That scenario also covers selected-text insertion and undo restoration after a l
 The ordinary BTW regression is in `verification/ordinary-snapshot-proof.json` and `verification/ordinary-prefix-proof.json`.
 Clean publication checks are recorded in `verification/release-proof.json`.
 
-Version 1.5.1 preserves the messages in RPC errors.
+Version 1.5.2 removes the main-request prerequisite and retains the RPC error message correction.
 The cold-source scenario enables the coordinator after the main conversation already has history.
-It checks the visible explanation, the retained draft and successful retry after the next main request.
-That retry also preserves the complete main prefix, tools and request options.
+The first side question completes before another main model request.
+With unchanged instructions, native system assembly preserves the complete main prefix in this scenario.
+The next side question uses the captured main baseline after the main task continues.
+Both requests retain the model, tools and other request options.
+Without an earlier capture, changed instructions can produce a different first system prefix.
+No historical provider system prompt is reconstructed or fabricated.
 The result is in `verification/cold-source-proof.json`.
+The instruction-update variant is in `verification/cold-source-update-proof.json`.
+It preserves the main message history and uses the current system instructions on the first side request.
+Its later side request matches the newly captured main prefix.

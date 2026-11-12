@@ -26,7 +26,10 @@ It registers no model-facing tools and changes no tool definitions.
 - Main goal, review and approval state never becomes live-side control state.
 - The only inherited OpenChamber metadata is validated project context pins.
 - When the coordinator is available, ordinary BTW uses a captured prefix.
-- Live BTW requires a main request captured after the plugin loads.
+- Live BTW accepts an existing main conversation immediately after the plugin loads.
+- An empty reservation prefix selects native system assembly from the copied snapshot and instruction entries.
+- A missing capture never supplies an empty or fabricated system prompt.
+- Captures that arrive during native preparation apply to the next side question.
 - A context hook restores the captured system only for the same agent, provider and model.
 - Parent deletion removes its saved prefix through the event stream.
 - Prefix values and conversation content never enter logs.
@@ -48,3 +51,6 @@ OpenCode keeps an initial instruction baseline and appends later instruction upd
 A fork seeds a new baseline from current values.
 The hook captures the original baseline that the provider request actually uses.
 If the main session changes its baseline, live snapshots keep their copy until retirement.
+If no capture exists, native system assembly keeps existing conversations usable without another main request.
+The first side system prefix can differ from the earlier main request after an instruction change.
+Later questions use the main baseline after the hook captures it.

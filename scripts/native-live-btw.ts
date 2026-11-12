@@ -15,13 +15,15 @@ await mkdir(output, { recursive: true });
 const root = await mkdtemp(join(output, 'live-btw-'));
 const project = join(root, 'project');
 await mkdir(project);
-const coldSource = process.argv.includes('--cold-source');
+const coldInstructionUpdate = process.argv.includes('--cold-source-update');
+const coldSource = coldInstructionUpdate || process.argv.includes('--cold-source');
 await writeFile(join(project, 'opencode.json'), JSON.stringify({ plugins: coldSource ? [] : [resolve('plugin')] }));
 const before = process.argv.includes('--before');
 const dist = process.env.BTW_PROOF_DIST ?? join(repo, 'packages/web/dist');
 const requests: Array<Record<string, unknown> & { messages: unknown[] }> = [];
 let mainCalls = 0;
 let sideFirstCalls = 0;
+let coldParentWire: Record<string, unknown> & { messages: unknown[] } | undefined;
 let advanceMain: (() => void) | undefined;
 let finishMain: (() => void) | undefined;
 const advanceGate = new Promise<void>((resolve) => { advanceMain = resolve; });
@@ -79,8 +81,14 @@ const browser = await chromium.launch({ executablePath: process.env.BTW_CHROME_E
   args: ['--disable-features=MacAppCodeSignClone'] });
 const page = await browser.newPage({ viewport: { width: 1800, height: 1040 } });
 const errors: string[] = [];
+const rpcErrors: unknown[] = [];
 const permissionWrites: string[] = [];
 page.on('pageerror', (error) => errors.push(error.message));
+page.on('response', async (response) => {
+  if (response.url().includes('/rpc/openchamber.btw/') && response.status() >= 400) {
+    rpcErrors.push(await response.json().catch(() => ({ status: response.status() })));
+  }
+});
 page.on('request', (request) => {
   if (request.method() === 'PUT' && request.url().includes('/permission-auto-accept/sessions/')) permissionWrites.push(new URL(request.url()).pathname.split('/').at(-1)!);
 });
@@ -124,6 +132,12 @@ try {
   if (coldSource) {
     await sdk.session.prompt({ sessionID: parent.id, text: 'COLD_MAIN_SETUP' });
     await sdk.experimental.session.wait({ sessionID: parent.id });
+    if (coldInstructionUpdate) {
+      await sdk.experimental.session.instructions.entry.put({ sessionID: parent.id, key: 'live-proof', value: 'KEEP_CUSTOM_PREFIX updated before activation.' });
+      await sdk.session.prompt({ sessionID: parent.id, text: 'COLD_MAIN_UPDATE' });
+      await sdk.experimental.session.wait({ sessionID: parent.id });
+    }
+    coldParentWire = requests.at(-1)!;
     await writeFile(join(project, 'opencode.json'), JSON.stringify({ plugins: [resolve('plugin')] }));
     await expect.poll(async () => {
       try { return (await sdk.rpc(LIVE_BTW_RPC).status({}, { location: { directory: project } })).version; }
@@ -135,8 +149,21 @@ try {
     await editor.click();
     await page.keyboard.insertText(`/live-btw ${firstQuestion}`);
     await page.keyboard.press('Enter');
-    await expect(page.getByText('live-btw.reserve failed: Wait for the main chat to make its next model request after enabling BTW, then send the side question again.', { exact: true })).toBeVisible();
-    await expect(editor).toHaveText(firstQuestion);
+    const coldSide = page.locator('[data-chat-column="pinned"]');
+    await expect(coldSide).toBeVisible({ timeout: 30_000 });
+    await expect(coldSide.getByText(firstQuestion, { exact: true })).toBeVisible();
+    await expect(coldSide.getByText('FIRST_FORMAL_ANSWER: The main task is still running.', { exact: true })).toBeVisible({ timeout: 30_000 });
+    expect(mainCalls).toBe(0);
+    const firstWire = requests.find((entry) => JSON.stringify(entry.messages).includes('LIVE_SIDE_FIRST'))!;
+    if (coldInstructionUpdate) {
+      expect(firstWire.messages.slice(1, coldParentWire.messages.length)).toEqual(coldParentWire.messages.slice(1));
+      expect(firstWire.messages[0]).not.toEqual(coldParentWire.messages[0]);
+      expect(JSON.stringify(firstWire.messages[0])).toContain('KEEP_CUSTOM_PREFIX updated before activation.');
+      expect(JSON.stringify(firstWire.messages[0])).toContain('PINNED_MAIN_REFERENCE');
+    } else expect(firstWire.messages.slice(0, coldParentWire.messages.length)).toEqual(coldParentWire.messages);
+    const { messages: coldMessages, ...coldOptions } = coldParentWire;
+    const { messages: firstMessages, ...firstOptions } = firstWire;
+    expect(firstOptions).toEqual(coldOptions);
     await page.screenshot({ path: join(output, 'live-btw-cold-source.png') });
   }
   await sdk.session.prompt({ sessionID: parent.id, text: 'LIVE_MAIN_TASK. Work through the steps and report progress.' });
@@ -148,7 +175,7 @@ try {
   await expect(main.getByText(/MAIN_PREMISE_ONE/).first()).toBeVisible({ timeout: 30_000 });
   await main.locator('.cm-content').click();
   if (!coldSource) await page.keyboard.insertText(`/live-btw ${firstQuestion}`);
-  await page.keyboard.press('Enter');
+  if (!coldSource) await page.keyboard.press('Enter');
   if (before) {
     await expect.poll(() => requests.some((entry) => JSON.stringify(entry.messages).includes('/live-btw'))).toBe(true);
     expect(await side.count()).toBe(0);
@@ -172,6 +199,7 @@ try {
     const firstSessionID = await side.getAttribute('data-chat-session-id');
     if (!firstSessionID) throw new Error('The first live conversation has no session ID.');
     const rootSessionID = (await sdk.session.get({ sessionID: firstSessionID })).metadata.openchamber.btwLiveRootSessionID;
+    await expect.poll(async () => (await sdk.session.get({ sessionID: rootSessionID })).metadata.openchamber.btwLiveLease).toBeNull();
     const permissionButton = side.getByRole('button', { name: /^Permissions:/ });
     const writesBeforeChoice = permissionWrites.length;
     const permissionBefore = await permissionButton.getAttribute('aria-label');
@@ -183,7 +211,7 @@ try {
     const firstNative = await sdk.session.context({ sessionID: firstSessionID });
     const firstBasis = firstNative.find((message) => message.metadata?.openchamberLiveBtwEnd)?.metadata?.openchamberLiveBtwBasis;
     expect(firstBasis).toMatchObject({ completed: true });
-    expect(firstBasis.text).toContain('MAIN_PREMISE_ONE');
+    expect(firstBasis.text).toContain(coldSource ? 'Fixture reply.' : 'MAIN_PREMISE_ONE');
     advanceMain?.();
     await expect(main.getByText(/MAIN_PREMISE_TWO/).first()).toBeVisible();
     await expect.poll(() => mainCalls).toBe(3);
@@ -193,7 +221,7 @@ try {
     await side.locator('.cm-content').click();
     await page.keyboard.insertText(secondQuestion);
     await page.keyboard.press('Enter');
-    await expect.poll(() => importWaiting).toBe(true);
+    await expect.poll(() => importWaiting, { timeout: 15_000 }).toBe(true);
     await side.locator('.cm-content').click();
     await page.keyboard.insertText('DRAFT_TYPED_DURING_PREPARATION');
     releaseImport?.();
@@ -220,7 +248,7 @@ try {
     expect(parentPrefix).toContain('MAIN_PREMISE_TWO');
     expect(tail).toContain('FIRST_FORMAL_ANSWER');
     expect(tail).toContain('LIVE_SIDE_FIRST');
-    expect(tail).toContain('MAIN_PREMISE_ONE');
+    expect(tail).toContain(coldSource ? 'Fixture reply.' : 'MAIN_PREMISE_ONE');
     expect(tail).not.toContain('FIRST_SIDE_WORK_SHOULD_DROP');
     expect(tail).not.toContain('side-inspection');
     expect(tail).not.toContain('DRAFT_TYPED_DURING_PREPARATION');
@@ -278,7 +306,9 @@ try {
       reopenHeadLinkAndSendThirdQuestion: 'passed', inheritedPinsPreserved: 'passed',
       emptyLiveChatDoesNotCallModel: 'passed', mainTaskRemainsRunning: true,
       permissionChoiceFollowsLogicalRoot: 'passed',
-      ...(coldSource ? { coldSourceShowsReason: true, coldSourcePreservesQuestion: true, coldSourceRetryAfterMainRequest: true } : {}),
+      ...(coldSource ? { coldSourceImmediatelyAvailable: true, noExtraMainRequest: true,
+        coldSourceFullPrefixPreserved: !coldInstructionUpdate, coldSourceHistoryPreserved: true,
+        coldSourceUsesCurrentInstructions: coldInstructionUpdate, capturedPrefixUsedOnLaterQuestion: true } : {}),
       ...(process.argv.includes('--fail-first') ? { firstSendFailureReusesRoot: 'passed' } : {}),
       unchangedMainPrefix: inheritedPrefix === parentPrefix, parentPrefixSha256: hash(parentPrefix), inheritedPrefixSha256: hash(inheritedPrefix),
       sameRequestOptionsAndTools: true, customInstructionEntryPreserved: parentPrefix.includes('KEEP_CUSTOM_PREFIX'),
@@ -290,8 +320,9 @@ try {
   await page.screenshot({ path: join(output, `live-btw-${before ? 'before' : 'after'}.png`), animations: 'disabled' });
 } catch (error) {
   await page.screenshot({ path: join(output, 'live-btw-debug.png'), animations: 'disabled' });
-  console.error(error instanceof Error ? error.message : error);
+  console.error(error instanceof Error ? error.stack : error);
   console.error('Browser errors:', errors);
+  console.error('RPC errors:', JSON.stringify(rpcErrors));
   console.error((await page.locator('body').innerText()).slice(-5000));
   console.error('Side scroll state:', await page.locator('[data-chat-column="pinned"] [data-scrollbar="chat"]').evaluateAll((nodes) => nodes.map((node) => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }))));
   await writeFile(join(output, 'live-btw-debug-requests.json'), JSON.stringify(requests, null, 2));

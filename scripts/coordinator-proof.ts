@@ -54,6 +54,11 @@ try {
   assert.equal(status.version, 2);
   const parent = await sdk.session.create({ location: { directory: project }, title: 'Coordinator main fixture', agent: 'build', model: { providerID: 'perf', id: 'stream-300cps' } });
   await sdk.experimental.session.instructions.entry.put({ sessionID: parent.id, key: 'prefix-proof', value: 'ORIGINAL_BASELINE' });
+  stage = 'reserve without captured baseline';
+  const coldDraft = await rpc.reserve({ parentSessionID: parent.id, requestID: crypto.randomUUID() }, options);
+  assert.equal(requests.length, 0);
+  await finishLiveBtwTranscript(sdk, coldDraft, project, false);
+  await assert.rejects(sdk.session.get({ sessionID: coldDraft.rootSessionID }));
   await sdk.session.prompt({ sessionID: parent.id, text: 'MAIN_ONE' });
   await sdk.experimental.session.wait({ sessionID: parent.id });
   await sdk.experimental.session.instructions.entry.put({ sessionID: parent.id, key: 'prefix-proof', value: 'UPDATED_INSTRUCTION' });
@@ -175,6 +180,7 @@ try {
     repeatedPremiseDeduplicated: true, nativeHistoryRetained: true,
     retiredAliasCountPerTurn: 2, expiredAndRetiredPromptsRejected: true,
     runtimeSwitchForkCleanup: true, failedMaterializationCleanup: true, ordinaryBtwPrefixPreserved: true,
+    uncapturedMainReservesWithoutModelRequest: true,
     scope: 'Real OpenCode plugin RPC and model serialization, synthetic deterministic provider. No live-provider cache ratio measured.' };
   await writeFile(join(output, 'coordinator-proof.json'), JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result, null, 2));

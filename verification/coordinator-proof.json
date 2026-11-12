@@ -16,5 +16,6 @@
   "runtimeSwitchForkCleanup": true,
   "failedMaterializationCleanup": true,
   "ordinaryBtwPrefixPreserved": true,
+  "uncapturedMainReservesWithoutModelRequest": true,
   "scope": "Real OpenCode plugin RPC and model serialization, synthetic deterministic provider. No live-provider cache ratio measured."
 }

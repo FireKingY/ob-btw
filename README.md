@@ -1,6 +1,6 @@
 # ob-btw
 
-Native BTW side conversations for OpenChamber. Extension version **1.5.1**.
+Native BTW side conversations for OpenChamber. Extension version **1.5.2**.
 
 This revision opens each BTW with the native OpenChamber chat panel.
 The native panel owns the transcript, Markdown, code blocks, tables, tools, composer, permissions, and streaming.
@@ -46,11 +46,12 @@ In that host, open **Settings > Extensions** and add the local `ob-btw` folder.
 The repository includes the compiled panel and service scripts.
 It also includes `plugin/index.js` for the coordinator.
 
-After the coordinator loads, live conversations require one model request from their source main chat.
-That request records the main chat's actual system baseline.
-For an already running main chat, its next tool continuation or user turn supplies that baseline.
-If the baseline is missing, the error explains this requirement and the question remains in the composer.
-RPC errors retain the coordinator's message in version 1.5.1.
+Live conversations work immediately after the coordinator loads.
+They require no additional model request from the main chat.
+If the coordinator has a captured main system baseline, the side request uses it.
+Otherwise, OpenCode assembles the side system instructions from the native snapshot and copied instruction entries.
+The next main model request supplies a captured baseline for subsequent side questions.
+RPC errors retain the coordinator's message.
 
 ## Use
 
@@ -154,9 +155,10 @@ Repeated main-session premises share their text across forks with different mess
 
 The rebuild also copies the main session's instruction entries.
 The normal knowledge-sync path leaves those captured entries unchanged for a live send.
-The coordinator restores the original system baseline before model dispatch.
+When a captured main baseline exists, the coordinator restores it before model dispatch.
 Main instruction updates stay in their original history positions.
-This preserves the parent prefix after pinned notes or other session instructions change.
+That captured baseline preserves the parent prefix after pinned notes or other session instructions change.
+Without a captured baseline, changed instructions can produce a different system prefix on the first side question.
 The same agent, provider and model are required for that shared prefix.
 Source Goal mode, review links and approvals do not become side-conversation control state.
 
@@ -225,6 +227,7 @@ node scripts/native-live-snapshot.ts
 node scripts/native-live-btw.ts
 node scripts/native-live-btw.ts --fail-first
 node scripts/native-live-btw.ts --cold-source
+node scripts/native-live-btw.ts --cold-source-update
 node scripts/quote-migration-proof.ts
 bun scripts/coordinator-proof.ts
 ```

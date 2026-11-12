@@ -1,10 +1,10 @@
 {
   "version": "2.7.0",
-  "extensionVersion": "1.5.1",
+  "extensionVersion": "1.5.2",
   "sourceBaseCommit": "183d935e9cb602ef6ce7f64cbf5f615e4d6b8048",
-  "hostPatchSha256": "4b9f4e2d414ce1900a2298d1ffba4311ccbd8cae86dddfe103921de898724c40",
+  "hostPatchSha256": "5bc27b46662c03fae4b8c0823010189338329509f62b88af8c9b54ef7ad06e7e",
   "indexSha256": "05e49e77ed0eafd19b9b65c2eb130f01bbafbf9f0b1301e15801ecf60851615d",
-  "preparedAt": 1794476485458,
+  "preparedAt": 1794478110721,
   "nativeLocalFeatures": [
     "session-activity"
   ],
@@ -15,7 +15,7 @@
   "bundleSha256": {
     "panel/main.js": "b8c36b86f855c4e385be7c2042ebaf7ec3f8f531f746bafd4a7f37974e43f7c1",
     "service/main.js": "75f27cca303f1b6eccf5efba00e4cfb86a5b1e16830aa944601eb3effaaeb17f",
-    "plugin/index.js": "17fcd2ff27c00dc7aee5ee03795339382240276b681531aba7c7069c4b5cd2a2"
+    "plugin/index.js": "ecffaf49d311e3c4906d7cde6de94061f344ec96b8ffda147b787f01961c8872"
   },
   "sourcePatchRoundTripFiles": 85,
   "cleanChangedGate": "passed",
@@ -33,9 +33,11 @@
   "toolsAndRequestOptions": "unchanged",
   "newQuestionAfterClosingMarker": true,
   "liveProviderCacheMeasurement": "Earlier controlled placement experiment retained in verification/cache-read-only-live.json. Version 1.5 scenarios use real OpenCode and a deterministic provider.",
-  "baselineActivation": "Live BTW needs one source model request after coordinator activation.",
+  "baselineActivation": "No main model request required. A captured baseline is used when available; otherwise OpenCode assembles the native system instructions.",
   "reviewFindingsAddressed": true,
   "rpcErrorMessages": "passed",
-  "coldSourceExplanationAndRetry": "passed",
-  "adapterTests": 87
+  "adapterTests": 87,
+  "immediateColdSourceProof": "passed",
+  "changedInstructionColdSourceProof": "passed",
+  "coldSourceSystemPrefix": "Matches for unchanged instructions; can differ after instruction updates before capture. Main message history is preserved."
 }

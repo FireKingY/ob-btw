@@ -1,6 +1,6 @@
 {
   "name": "btw-sidebar",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Native BTW and live BTW side conversations for OpenChamber.",
   "type": "module",
   "private": true,

@@ -3054,7 +3054,7 @@ index d1a7f8a..df405f5 100644
    'chat.textSelection.comment.placeholder': '新增選填留言...',
    'chat.textSelection.comment.attach': '附加',
 diff --git a/packages/ui/src/lib/opencode/DOCUMENTATION.md b/packages/ui/src/lib/opencode/DOCUMENTATION.md
-index 05bf3f5..979f908 100644
+index 05bf3f5..44a9f56 100644
 --- a/packages/ui/src/lib/opencode/DOCUMENTATION.md
 +++ b/packages/ui/src/lib/opencode/DOCUMENTATION.md
 @@ -7,6 +7,20 @@ to the shared UI domain model. Sync owns transcript membership and store writes.
@@ -3078,7 +3078,7 @@ index 05bf3f5..979f908 100644
  - `getSessionMessage` reads only the requested session. Pins, message references
    and linked-message existence checks must retain this strict behavior.
  - `getToolContentMessage` is reserved for `completeToolContent`, which checks
-@@ -28,6 +42,16 @@ to the shared UI domain model. Sync owns transcript membership and store writes.
+@@ -28,6 +42,17 @@ to the shared UI domain model. Sync owns transcript membership and store writes.
  
  ## Decisions
  
@@ -3089,7 +3089,8 @@ index 05bf3f5..979f908 100644
 +The live request probe checks the complete serialized prefix with a custom instruction entry.
 +The coordinator also captures the actual system baseline of the main model request.
 +It applies that captured baseline to the side model request after an instruction entry changes.
-+Live creation waits for a captured baseline after plugin installation.
++If the coordinator has no captured main baseline, live creation proceeds with native system assembly.
++Subsequent questions use the captured main baseline once it is available.
 +Ordinary BTW retains its native fallback on hosts without the optional plugin.
 +
  ### Why fresh provider reads wait for post-call requests
