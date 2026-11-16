@@ -10,6 +10,8 @@ It registers no model-facing tools and changes no tool definitions.
 - A root has at most one live reservation across clients.
 - If a client disappears, its reservation expires after five minutes.
 - Publication requires the reservation token and its registered candidate session.
+- Execution heads retain their native parent for permission inheritance and deletion.
+- If a child-completion notice wakes the logical container, the coordinator interrupts it before model dispatch.
 - Native prompt admission requires the current head and an unexpired reservation for that head.
 - One prepared head admits one question. A retry keeps the same native message ID.
 - The current root head must still match the head captured at reservation time.
@@ -54,3 +56,10 @@ If the main session changes its baseline, live snapshots keep their copy until r
 If no capture exists, native system assembly keeps existing conversations usable without another main request.
 The first side system prefix can differ from the earlier main request after an instruction change.
 Later questions use the main baseline after the hook captures it.
+
+## Why logical containers do not request a model
+
+OpenCode 2.2.7 sends child completion reports to a native parent and can start another model request there.
+The root identifies the side conversation and stores its permission choice.
+Its execution head answers the user.
+The coordinator interrupts container requests before they reach a provider and clears old container notices on the next send.

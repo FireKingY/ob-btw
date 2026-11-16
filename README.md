@@ -1,6 +1,6 @@
 # ob-btw
 
-Native BTW side conversations for OpenChamber. Extension version **1.5.2**.
+Native BTW side conversations for OpenChamber. Extension version **1.6.0**.
 
 This revision opens each BTW with the native OpenChamber chat panel.
 The native panel owns the transcript, Markdown, code blocks, tables, tools, composer, permissions, and streaming.
@@ -12,11 +12,11 @@ The extension contains no transcript renderer or message composer.
 Apply the companion host change before installing this revision.
 The host source checkout belongs in `../openchamber`.
 The host advertises `features.sideChat` and accepts `openSession(id, { navigation: 'side' })`.
-The published OpenChamber 2.7.0 SDK does not expose this operation.
-The source build uses the companion SDK source through `tsconfig.json`.
-The package keeps the required SDK dependency at `2.7.0`.
+The published OpenChamber 2.7.2 SDK does not expose this operation.
+The extension build uses the compiled companion SDK through `tsconfig.json`.
+The package uses the SDK dependency at `2.7.2`.
 The compiled scripts need no source checkout at runtime.
-Live context rebuilds require OpenCode 2.2.6, which the target host bundles.
+The target host bundles OpenCode 2.2.7.
 The extension includes an OpenCode coordinator plugin.
 Its capability must be approved in **Settings > Extensions**.
 Managed OpenCode loads that plugin through its watched configuration.
@@ -26,14 +26,14 @@ Without the host change, the extension shows the missing capability and leaves t
 
 ## Install
 
-The host patch targets OpenChamber 2.7.0 at commit `183d935e9cb602ef6ce7f64cbf5f615e4d6b8048`.
+The host patch targets OpenChamber 2.7.2 at commit `1a151518c95cc5ff3578bab593d2f96862ff3bb8`.
 Use sibling checkouts for the host and extension:
 
 ```bash
 git clone https://github.com/FireKingY/ob-btw.git
 git clone https://github.com/openchamber/openchamber.git
 cd openchamber
-git checkout 183d935e9cb602ef6ce7f64cbf5f615e4d6b8048
+git checkout 1a151518c95cc5ff3578bab593d2f96862ff3bb8
 git apply --check ../ob-btw/host.patch
 git apply ../ob-btw/host.patch
 bun install --frozen-lockfile
@@ -45,6 +45,13 @@ Run or package the patched checkout with the [OpenChamber build instructions](ht
 In that host, open **Settings > Extensions** and add the local `ob-btw` folder.
 The repository includes the compiled panel and service scripts.
 It also includes `plugin/index.js` for the coordinator.
+
+Version 1.6 keeps the OpenChamber 2.7.2 composer text store and shared session menus.
+The companion build uses the host's current Markdown renderer.
+Live execution heads keep their native parent for permission inheritance and deletion.
+The coordinator stops completion notifications from starting another model request in the logical container.
+Imported snapshots preserve instruction updates in their original history positions on OpenCode 2.2.7.
+The earlier [1.5.2 source and patch](https://github.com/FireKingY/ob-btw/tree/d7fd2036709e3c58d4210f6caa9856253f20480f) target OpenChamber 2.7.0.
 
 Live conversations work immediately after the coordinator loads.
 They require no additional model request from the main chat.
@@ -73,7 +80,9 @@ The menu and shortcut preserve the main draft and its attachments.
 
 The host forks the source conversation at its latest server state.
 The current turn can still be running, including the first turn.
-The snapshot includes the progress and tool results already in that history.
+The snapshot includes the settled progress and tool results already in that history.
+An ordinary BTW also saves the running step as reference text at creation.
+This note includes its available text and tool status without an unanswered tool call.
 It keeps inherited messages as context.
 The panel hides inherited main-session messages and shows the side conversation only.
 Each side chat has its own session and composer.

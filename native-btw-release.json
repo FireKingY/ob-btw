@@ -1,10 +1,11 @@
 {
-  "version": "2.7.0",
-  "extensionVersion": "1.5.2",
-  "sourceBaseCommit": "183d935e9cb602ef6ce7f64cbf5f615e4d6b8048",
-  "hostPatchSha256": "5bc27b46662c03fae4b8c0823010189338329509f62b88af8c9b54ef7ad06e7e",
-  "indexSha256": "05e49e77ed0eafd19b9b65c2eb130f01bbafbf9f0b1301e15801ecf60851615d",
-  "preparedAt": 1794478110721,
+  "version": "2.7.2",
+  "extensionVersion": "1.6.0",
+  "opencodeVersion": "2.2.7",
+  "sourceBaseCommit": "1a151518c95cc5ff3578bab593d2f96862ff3bb8",
+  "hostPatchSha256": "40494098552e6d82e3796220d56f65ac67204ad081c84cc21859d92d84c4ccba",
+  "indexSha256": "cd83478b5c49e2ad2d8bdb2535af0ee33217c3cee8dbdd51ca26e946cbb52909",
+  "preparedAt": "2026-11-16T05:11:46.021Z",
   "nativeLocalFeatures": [
     "session-activity"
   ],
@@ -13,11 +14,11 @@
     "file-link-menu"
   ],
   "bundleSha256": {
-    "panel/main.js": "b8c36b86f855c4e385be7c2042ebaf7ec3f8f531f746bafd4a7f37974e43f7c1",
+    "panel/main.js": "de67ab4872fb8dc4d0b7d23c9f0f05a0937e43e3f1e70f18e517f56ba058911f",
     "service/main.js": "75f27cca303f1b6eccf5efba00e4cfb86a5b1e16830aa944601eb3effaaeb17f",
-    "plugin/index.js": "ecffaf49d311e3c4906d7cde6de94061f344ec96b8ffda147b787f01961c8872"
+    "plugin/index.js": "2be7c28fd211037781ba24b0c320c8cd1a4174b3966681429fe60f05908181d5"
   },
-  "sourcePatchRoundTripFiles": 85,
+  "sourcePatchRoundTripFiles": 88,
   "cleanChangedGate": "passed",
   "cleanHostAndExtensionBuilds": "passed",
   "nativeLiveThreeTurnProof": "passed",
@@ -32,12 +33,12 @@
   "mainMessagesPrefix": "unchanged",
   "toolsAndRequestOptions": "unchanged",
   "newQuestionAfterClosingMarker": true,
-  "liveProviderCacheMeasurement": "Earlier controlled placement experiment retained in verification/cache-read-only-live.json. Version 1.5 scenarios use real OpenCode and a deterministic provider.",
-  "baselineActivation": "No main model request required. A captured baseline is used when available; otherwise OpenCode assembles the native system instructions.",
-  "reviewFindingsAddressed": true,
-  "rpcErrorMessages": "passed",
-  "adapterTests": 87,
+  "containerModelRequestsSuppressed": true,
+  "nativeParentPermissions": "passed",
+  "rootDeletionCleanup": "passed",
   "immediateColdSourceProof": "passed",
   "changedInstructionColdSourceProof": "passed",
-  "coldSourceSystemPrefix": "Matches for unchanged instructions; can differ after instruction updates before capture. Main message history is preserved."
+  "coldSourceSystemPrefix": "Matches for unchanged instructions. Instruction updates before capture can change the first system prefix. Main message history stays intact.",
+  "liveProviderCacheMeasurement": "Earlier placement measurements remain in verification/cache-read-only-live.json. Version 1.6 uses real OpenCode and a deterministic provider.",
+  "reviewFindingsAddressed": true
 }

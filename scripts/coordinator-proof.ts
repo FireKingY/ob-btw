@@ -61,7 +61,7 @@ try {
   await assert.rejects(sdk.session.get({ sessionID: coldDraft.rootSessionID }));
   await sdk.session.prompt({ sessionID: parent.id, text: 'MAIN_ONE' });
   await sdk.experimental.session.wait({ sessionID: parent.id });
-  await sdk.experimental.session.instructions.entry.put({ sessionID: parent.id, key: 'prefix-proof', value: 'UPDATED_INSTRUCTION' });
+  await sdk.experimental.session.instructions.entry.put({ sessionID: parent.id, key: 'prefix-proof', value: 'UPDATED_INSTRUCTION <tag>& "quoted"' });
   await sdk.session.prompt({ sessionID: parent.id, text: 'MAIN_TWO' });
   await sdk.experimental.session.wait({ sessionID: parent.id });
   const pins = { notes: ['synthetic-note'], plans: [] };
@@ -74,6 +74,7 @@ try {
   });
   assert.equal(metadataWrite.status, 200);
   const mainWire = requests.at(-1)!;
+  const beforeFirstSide = requests.length;
   stage = 'first prepare';
   const first = await prepare({ parentSessionID: parent.id, requestID: crypto.randomUUID() });
   const firstInfo = await sdk.session.get({ sessionID: first.sessionID });
@@ -85,8 +86,11 @@ try {
   }
   await sdk.session.prompt({ sessionID: first.sessionID, text: 'SIDE_ONE' });
   await sdk.experimental.session.wait({ sessionID: first.sessionID });
+  await sdk.experimental.session.wait({ sessionID: first.rootSessionID });
   stage = 'first finish';
   await finish(first);
+  assert.equal(firstInfo.parentID, first.rootSessionID);
+  assert.equal(requests.length, beforeFirstSide + 1);
   const sideWire = requests.at(-1)!;
   assert.deepEqual(sideWire.messages.slice(0, mainWire.messages.length), mainWire.messages);
   const { messages: mainMessages, ...mainOptions } = mainWire;
@@ -99,6 +103,7 @@ try {
     prepare({ sessionID: first.sessionID, requestID: crypto.randomUUID() }),
     prepare({ sessionID: first.sessionID, requestID: crypto.randomUUID() }),
   ]);
+  if (!concurrent.some((entry) => entry.status === 'fulfilled')) console.error('Concurrent refusals:', concurrent.map((entry) => entry.status === 'rejected' ? entry.reason : null));
   assert.equal(concurrent.filter((entry) => entry.status === 'fulfilled').length, 1);
   const second = concurrent.find((entry) => entry.status === 'fulfilled')!.value;
   await assert.rejects(prepare({ sessionID: first.sessionID, requestID: crypto.randomUUID() }));
@@ -174,6 +179,29 @@ try {
   await sdk.session.prompt({ sessionID: ordinary.id, text: 'ORDINARY_SIDE_QUESTION' });
   await sdk.experimental.session.wait({ sessionID: ordinary.id });
   assert.deepEqual(requests.at(-1)!.messages.slice(0, mainWire.messages.length), mainWire.messages);
+  stage = 'delete logical root and execution heads';
+  const disposable = await prepare({ parentSessionID: parent.id, requestID: crypto.randomUUID() });
+  await finishLiveBtwTranscript(sdk, disposable, project, false);
+  await sdk.session.remove({ sessionID: disposable.rootSessionID });
+  let removed = false;
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    try { await sdk.session.get({ sessionID: disposable.sessionID }); }
+    catch (error) {
+      if (error?._tag !== 'SessionNotFoundError') throw error;
+      removed = true;
+      break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  assert.equal(removed, true);
+  stage = 'root deletion during materialization';
+  const deletingLease = await rpc.reserve({ parentSessionID: parent.id, requestID: crypto.randomUUID() }, options);
+  let deletedCandidate;
+  await assert.rejects(buildLiveBtwTranscript({ sdk: () => sdk, directory: project, lease: deletingLease,
+    check: () => {}, cleanup: (sessionID) => sdk.session.remove({ sessionID }),
+    materialize: async (session) => { deletedCandidate = session.id; await sdk.session.remove({ sessionID: deletingLease.rootSessionID }); },
+  }));
+  await assert.rejects(sdk.session.get({ sessionID: deletedCandidate }));
   const result = { serverCoordination: 'passed', concurrentWriters: 'one accepted, one refused', activeLeaseBlocksAnotherClient: true,
     originalSystemBaselineAfterInstructionUpdate: true, unchangedMainMessagesPrefix: true, unchangedToolsAndOptions: true,
     automationMetadataExcluded: true, productionPinsPreserved: true, retiredSnapshotsEmpty: true, oldMessageLinksResolve: true,
@@ -181,6 +209,7 @@ try {
     retiredAliasCountPerTurn: 2, expiredAndRetiredPromptsRejected: true,
     runtimeSwitchForkCleanup: true, failedMaterializationCleanup: true, ordinaryBtwPrefixPreserved: true,
     uncapturedMainReservesWithoutModelRequest: true,
+    noParentNotificationRequests: true, rootDeletionCleansExecutionHeads: true, concurrentRootDeletionCleansCandidate: true,
     scope: 'Real OpenCode plugin RPC and model serialization, synthetic deterministic provider. No live-provider cache ratio measured.' };
   await writeFile(join(output, 'coordinator-proof.json'), JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result, null, 2));

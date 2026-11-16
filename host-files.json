@@ -1,5 +1,5 @@
 {
-  "baseCommit": "183d935e9cb602ef6ce7f64cbf5f615e4d6b8048",
+  "baseCommit": "1a151518c95cc5ff3578bab593d2f96862ff3bb8",
   "files": [
     "packages/sdk/API.md",
     "packages/sdk/DOCUMENTATION.md",
@@ -27,11 +27,14 @@
     "packages/ui/src/components/chat/composer/state/usePendingComposerText.ts",
     "packages/ui/src/components/chat/composer/submit/__tests__/slashCommands.test.ts",
     "packages/ui/src/components/chat/composer/submit/slashCommands.ts",
+    "packages/ui/src/components/chat/composer/submit/guestCommands.ts",
+    "packages/ui/src/components/chat/composer/submit/__tests__/guestCommands.test.ts",
     "packages/ui/src/components/chat/message/useCopyMessageLink.ts",
     "packages/ui/src/components/chat/message/TextSelectionMenu.tsx",
     "packages/ui/src/components/chat/message/TextSelectionMenu.render.test.tsx",
     "packages/ui/src/components/layout/ContextSurfacePanes.tsx",
-    "packages/ui/src/components/layout/Header.tsx",
+    "packages/ui/src/components/layout/HeaderSessionActionsMenuItems.tsx",
+    "packages/ui/src/components/layout/DOCUMENTATION.md",
     "packages/ui/src/components/layout/PluginPane.tsx",
     "packages/ui/src/components/ui/CommandPalette.tsx",
     "packages/ui/src/components/ui/HelpDialog.tsx",

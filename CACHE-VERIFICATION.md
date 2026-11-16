@@ -92,3 +92,13 @@ The result is in `verification/cold-source-proof.json`.
 The instruction-update variant is in `verification/cold-source-update-proof.json`.
 It preserves the main message history and uses the current system instructions on the first side request.
 Its later side request matches the newly captured main prefix.
+
+## OpenChamber 2.7.2 compatibility
+
+Version 1.6 targets OpenChamber 2.7.2 and OpenCode 2.2.7.
+It keeps the current composer text store and the shared session menu.
+The ordinary snapshot scenario also opens a side chat from that menu with a main draft present.
+The coordinator scenario includes instruction updates with HTML characters.
+It compares the complete provider prefix and counts model requests after child completion.
+The native live scenario uses the server policy resolver to examine permission inheritance after each context rebuild.
+The compatibility results are in `verification/host-2.7.2.json`.

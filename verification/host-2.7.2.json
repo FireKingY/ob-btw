@@ -1,0 +1,30 @@
+{
+  "hostVersion": "2.7.2",
+  "opencodeVersion": "2.2.7",
+  "extensionVersion": "1.6.0",
+  "sourceBaseCommit": "1a151518c95cc5ff3578bab593d2f96862ff3bb8",
+  "hostPatchSha256": "40494098552e6d82e3796220d56f65ac67204ad081c84cc21859d92d84c4ccba",
+  "changedGate": "passed",
+  "pureHostBuild": "passed",
+  "combinedLocalBuild": "passed",
+  "affectedUnitTests": 512,
+  "localActivityTests": 105,
+  "nativeScenarios": [
+    "ordinary fixed snapshot and shared menu",
+    "live three turns and original premises",
+    "cold source",
+    "cold source with instruction changes",
+    "first-send recovery",
+    "quoted context and undo"
+  ],
+  "localCoexistence": {
+    "nativeBtw": true,
+    "mathInMainAndSide": true,
+    "activityToggleAndReload": true,
+    "sideSelectionPreserved": true,
+    "fileLinkContextMenu": true,
+    "errors": [],
+    "scope": "Built native UI and real OpenCode with synthetic provider. File menu bridge simulated; no clipboard or Finder operation."
+  },
+  "scope": "Published host patch contains BTW only. Local installation also retains activity ordering, Markdown Math, and the file menu. Provider requests use synthetic conversations."
+}

@@ -3,7 +3,8 @@
     // Environment setup & latest features
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "paths": {
-      "@openchamber/sdk": ["../openchamber/packages/sdk/src/index.ts"],
+      "@openchamber/sdk": ["../openchamber/packages/sdk/dist/index"],
+      "@openchamber/sdk/ui": ["../openchamber/packages/sdk/dist/ui/index"],
       "@opencode/client": ["../openchamber/node_modules/@opencode/client/dist/promise/index.d.ts"]
     },
     "target": "ESNext",

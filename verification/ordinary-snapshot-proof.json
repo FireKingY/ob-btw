@@ -6,5 +6,7 @@
   "oldSnapshotDoesNotFollowParent": "passed",
   "mainTaskRemainsRunning": true,
   "nativeFocus": "passed",
+  "sharedSessionMenuOpensSideChat": true,
+  "mainDraftPreservedByMenu": true,
   "errors": []
 }

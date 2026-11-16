@@ -8,7 +8,7 @@ type MethodContext = { error: (code: string, message: string, data: RecordValue)
 type Method = (input: unknown, context: MethodContext) => Promise<unknown>;
 export type CoordinatorContext = {
   location: { directory: string };
-  session: Pick<OpenCodeClient['session'], 'get' | 'create' | 'remove' | 'context' | 'update'> & {
+  session: Pick<OpenCodeClient['session'], 'get' | 'create' | 'remove' | 'context' | 'update' | 'interrupt'> & {
     hook(name: 'context', callback: (event: Hook) => Promise<void>): Promise<unknown>;
     hook(name: 'prompt', callback: (event: { sessionID: string; messageID: string }) => Promise<void>): Promise<unknown>;
   };
@@ -151,7 +151,7 @@ export function createCoordinator(ctx: CoordinatorContext) {
     }
     const pending = namespace(root).btwLiveRetire;
     await update(root.id, { btwLiveHeadSessionID: prepared.id,
-      btwLiveRetire: [...new Set([...(Array.isArray(pending) ? pending : []), String(lease.previousSessionID)])],
+      btwLiveRetire: [...new Set([...(Array.isArray(pending) ? pending : []), root.id, String(lease.previousSessionID)])],
       btwLiveLease: { ...lease, preparedSessionID: prepared.id },
     });
     return { ok: true };
@@ -248,7 +248,7 @@ export function createCoordinator(ctx: CoordinatorContext) {
     }
   };
   return {
-    methods: { reserve: method(reserve), publish: method(publish), track: method(track), finish: method(finish), retired: method(retired), resolve: method(resolve), snapshot: method(snapshot), status: method(async () => ({ version: 2, prefixCapture: true, requiresMainRequest: false })) },
+    methods: { reserve: method(reserve), publish: method(publish), track: method(track), finish: method(finish), retired: method(retired), resolve: method(resolve), snapshot: method(snapshot), status: method(async () => ({ version: 2, prefixCapture: true, requiresMainRequest: false, containerRequestsSuppressed: true })) },
     prompt: async (event: { sessionID: string; messageID: string }) => {
       const session = await owned(event.sessionID);
       if (!live(session)) return;
@@ -267,6 +267,12 @@ export function createCoordinator(ctx: CoordinatorContext) {
     },
     context: async (event: Hook) => {
       const session = await owned(event.sessionID);
+      if (live(session) && (text(namespace(session).btwLiveRootSessionID) ?? session.id) === session.id
+        && (currentHead(session) !== session.id || object(namespace(session).btwLiveLease).created === true)) {
+        // Native child-completion notices can wake the bookkeeping root on OpenCode 2.2.7.
+        await ctx.session.interrupt({ sessionID: session.id, resume: false });
+        return;
+      }
       if (namespace(session).kind === 'btw') {
         const saved = object(await ctx.storage.get(`head-prefix/${session.id}`));
         if (Array.isArray(saved.system) && saved.agent === event.agent && object(saved.model).id === event.model.id && object(saved.model).providerID === event.model.providerID) event.system = clone(saved.system);

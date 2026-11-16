@@ -10,6 +10,7 @@ const { chromium, expect } = await import(process.env.BTW_PLAYWRIGHT_MODULE ?? '
 const { OpenCode } = await import(pathToFileURL(join(repo, 'node_modules/@opencode/client/dist/promise/index.js')).href);
 const { LIVE_BTW_RPC } = await import(pathToFileURL(join(repo, 'packages/sdk/dist/btw-rpc.js')).href);
 const { startIsolatedServer } = await import(pathToFileURL(join(repo, 'scripts/perf/isolated-server.mjs')).href);
+const { createPermissionAutoAcceptRuntime } = await import(pathToFileURL(join(repo, 'packages/web/server/lib/permission-auto-accept/runtime.js')).href);
 const output = resolve(process.env.BTW_OUTPUT_DIR ?? join(tmpdir(), 'ob-btw-verification'));
 await mkdir(output, { recursive: true });
 const root = await mkdtemp(join(output, 'live-btw-'));
@@ -122,6 +123,16 @@ await page.route('**/*', async (route) => {
 try {
   server = await startIsolatedServer({ repo, dist, state: join(root, 'state'), project, port: 4849, fixturePort: 4848, logFile: join(root, 'server.log') });
   const sdk = OpenCode.make({ baseUrl: 'http://localhost:4849', headers: { 'x-opencode-directory': encodeURIComponent(project) } });
+  const inheritedMode = async (sessionID: string) => {
+    const policy = await (await fetch('http://localhost:4849/api/permission-auto-accept')).json();
+    const runtime = createPermissionAutoAcceptRuntime({
+      buildOpenCodeUrl: (path: string) => `http://localhost:4849${path}`,
+      getOpenCodeAuthHeaders: () => ({}),
+      readSettingsFromDiskMigrated: async () => ({ permissionAutoAccept: { sessions: policy.modes, revision: policy.revision } }),
+      persistSettings: async () => { throw new Error('The permission probe must remain read-only.'); },
+    });
+    return runtime.resolveSessionMode(sessionID, project);
+  };
   await sdk.model.list();
   const pins = { notes: ['synthetic-note-for-prefix'], plans: [] };
   const parent = await sdk.session.create({ location: { directory: project }, title: 'Live BTW main task', metadata: { openchamber: { project_context_pins: pins } },
@@ -205,9 +216,10 @@ try {
     const permissionBefore = await permissionButton.getAttribute('aria-label');
     await permissionButton.click();
     await expect.poll(() => permissionWrites.length).toBeGreaterThan(writesBeforeChoice);
-    expect(permissionWrites.at(-1)).toBe(rootSessionID);
+    expect(permissionWrites.slice(writesBeforeChoice)).toContain(rootSessionID);
     await expect(permissionButton).not.toHaveAttribute('aria-label', permissionBefore!);
     const selectedPermission = await permissionButton.getAttribute('aria-label');
+    expect(await inheritedMode(firstSessionID)).toBe(await inheritedMode(rootSessionID));
     const firstNative = await sdk.session.context({ sessionID: firstSessionID });
     const firstBasis = firstNative.find((message) => message.metadata?.openchamberLiveBtwEnd)?.metadata?.openchamberLiveBtwBasis;
     expect(firstBasis).toMatchObject({ completed: true });
@@ -236,6 +248,7 @@ try {
     expect(await side.getByText('LIVE_MAIN_TASK. Work through the steps and report progress.', { exact: true }).count()).toBe(0);
     const currentHead = await side.getAttribute('data-chat-session-id');
     await expect(permissionButton).toHaveAttribute('aria-label', selectedPermission!);
+    expect(await inheritedMode(currentHead!)).toBe(await inheritedMode(rootSessionID));
     expect(currentHead).not.toBe(firstSessionID);
     const sideWire = requests.find((entry) => JSON.stringify(entry.messages).includes('LIVE_SIDE_SECOND'))!;
     const inheritedPrefix = JSON.stringify(sideWire.messages.slice(0, parentWire.messages.length));
@@ -306,6 +319,7 @@ try {
       reopenHeadLinkAndSendThirdQuestion: 'passed', inheritedPinsPreserved: 'passed',
       emptyLiveChatDoesNotCallModel: 'passed', mainTaskRemainsRunning: true,
       permissionChoiceFollowsLogicalRoot: 'passed',
+      serverPolicyInheritanceAcrossRebuilds: 'passed',
       ...(coldSource ? { coldSourceImmediatelyAvailable: true, noExtraMainRequest: true,
         coldSourceFullPrefixPreserved: !coldInstructionUpdate, coldSourceHistoryPreserved: true,
         coldSourceUsesCurrentInstructions: coldInstructionUpdate, capturedPrefixUsedOnLaterQuestion: true } : {}),

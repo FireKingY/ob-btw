@@ -187,10 +187,21 @@ try {
         expect((await sdk.session.get({ sessionID: secondSideId! })).agent).toBe(parentSession.agent);
         await expect(side.getByText('Build', { exact: true }).last()).toBeVisible();
         expect(mainResponse?.writableEnded).toBe(false);
-        expect(new URL(page.url()).searchParams.get('session')).toBe(parent.id);
-        expect(errors).toEqual([]);
-        const result = { ...directProof, firstRunningTurnSideQuestion: 'passed', latestSnapshotOnNextFork: 'passed',
-            oldSnapshotDoesNotFollowParent: 'passed', mainTaskRemainsRunning: true, nativeFocus: 'passed', errors };
+         expect(new URL(page.url()).searchParams.get('session')).toBe(parent.id);
+         const requestsBeforeMenu = wireRequests.length;
+         await editor.click();
+         await page.keyboard.insertText('MAIN_DRAFT_BEFORE_SIDE_MENU');
+         await page.getByRole('button', { name: 'Open session actions', exact: true }).click();
+         await page.getByRole('menuitem', { name: /New side chat/ }).click();
+         await expect(side).not.toHaveAttribute('data-chat-session-id', secondSideId!);
+         await expect(side.locator('.cm-content')).toBeFocused();
+         await expect(editor).toHaveText('MAIN_DRAFT_BEFORE_SIDE_MENU');
+         expect(wireRequests.length).toBe(requestsBeforeMenu);
+         expect(new URL(page.url()).searchParams.get('session')).toBe(parent.id);
+         expect(errors).toEqual([]);
+         const result = { ...directProof, firstRunningTurnSideQuestion: 'passed', latestSnapshotOnNextFork: 'passed',
+             oldSnapshotDoesNotFollowParent: 'passed', mainTaskRemainsRunning: true, nativeFocus: 'passed',
+             sharedSessionMenuOpensSideChat: true, mainDraftPreservedByMenu: true, errors };
         await writeFile(`${output}/native-btw-live-after.json`, JSON.stringify(result, null, 2));
         console.log(JSON.stringify(result, null, 2));
         }

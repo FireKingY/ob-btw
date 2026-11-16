@@ -17,5 +17,8 @@
   "failedMaterializationCleanup": true,
   "ordinaryBtwPrefixPreserved": true,
   "uncapturedMainReservesWithoutModelRequest": true,
+  "noParentNotificationRequests": true,
+  "rootDeletionCleansExecutionHeads": true,
+  "concurrentRootDeletionCleansCandidate": true,
   "scope": "Real OpenCode plugin RPC and model serialization, synthetic deterministic provider. No live-provider cache ratio measured."
 }

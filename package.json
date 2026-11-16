@@ -1,6 +1,6 @@
 {
   "name": "btw-sidebar",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "description": "Native BTW and live BTW side conversations for OpenChamber.",
   "type": "module",
   "private": true,
@@ -15,7 +15,7 @@
   },
   "openchamber": {
     "apiVersion": 1,
-    "engines": { "openchamber": ">=2.7.0" },
+    "engines": { "openchamber": ">=2.7.2" },
     "id": "btw-sidebar",
     "name": "BTW",
     "icon": "chat-4",
@@ -33,6 +33,6 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@openchamber/sdk": "2.7.0"
+    "@openchamber/sdk": "2.7.2"
   }
 }
