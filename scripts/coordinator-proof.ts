@@ -80,9 +80,10 @@ try {
   const firstInfo = await sdk.session.get({ sessionID: first.sessionID });
   const rootInfo = await sdk.session.get({ sessionID: first.rootSessionID });
   for (const session of [firstInfo, rootInfo]) {
-    assert.equal(session.metadata.openchamber.goal, undefined);
-    assert.equal(session.metadata.openchamber.reviewSessionID, undefined);
-    assert.deepEqual(session.metadata.openchamber.project_context_pins, pins);
+    const namespace = session.metadata.openchamber.btwLiveContainer ?? session.metadata.openchamber;
+    assert.equal(namespace.goal, undefined);
+    assert.equal(namespace.reviewSessionID, undefined);
+    assert.deepEqual(namespace.project_context_pins, pins);
   }
   await sdk.session.prompt({ sessionID: first.sessionID, text: 'SIDE_ONE' });
   await sdk.experimental.session.wait({ sessionID: first.sessionID });
@@ -130,15 +131,17 @@ try {
   const resolvedOld = await rpc.resolve({ sessionID: first.sessionID, messageID: firstQuestion.id }, options);
   assert.equal(resolvedOld.sessionID, third.sessionID);
   assert.equal(thirdRecords.find((message) => message.id === resolvedOld.messageID)?.text, 'SIDE_ONE');
-  stage = 'expired prompt admission';
+  stage = 'stale metadata cannot replace coordinator state';
   const expired = await prepare({ sessionID: third.rootSessionID, requestID: crypto.randomUUID() });
   const expiryRoot = await sdk.session.get({ sessionID: expired.rootSessionID });
   await sdk.session.update({ sessionID: expiryRoot.id, metadata: { ...expiryRoot.metadata, openchamber: {
-    ...expiryRoot.metadata.openchamber, btwLiveLease: { ...expiryRoot.metadata.openchamber.btwLiveLease, expiresAt: 1 },
+    btwLiveContainer: { ...expiryRoot.metadata.openchamber.btwLiveContainer, btwLiveLease: { ...expiryRoot.metadata.openchamber.btwLiveContainer.btwLiveLease, expiresAt: 1 } },
   } } });
   const requestCount = requests.length;
-  await assert.rejects(sdk.session.prompt({ sessionID: expired.sessionID, text: 'STALE_QUESTION_MUST_NOT_RUN' }));
-  assert.equal(requests.length, requestCount);
+  await sdk.session.prompt({ sessionID: expired.sessionID, text: 'CURRENT_LEASE_SURVIVES_STALE_METADATA' });
+  await sdk.experimental.session.wait({ sessionID: expired.sessionID });
+  await finish(expired);
+  assert.equal(requests.length, requestCount + 1);
   const next = await prepare({ sessionID: third.rootSessionID, requestID: crypto.randomUUID() });
   await sdk.session.prompt({ sessionID: next.sessionID, text: 'SIDE_FOUR' });
   await sdk.experimental.session.wait({ sessionID: next.sessionID });
@@ -169,7 +172,7 @@ try {
   }));
   await finishLiveBtwTranscript(sdk, failingLease, project, false);
   await assert.rejects(sdk.session.get({ sessionID: candidate }));
-  assert.equal((await sdk.session.get({ sessionID: next.rootSessionID })).metadata.openchamber.btwLiveHeadSessionID, next.sessionID);
+  assert.equal((await sdk.session.get({ sessionID: next.rootSessionID })).metadata.openchamber.btwLiveContainer.btwLiveHeadSessionID, next.sessionID);
 
   stage = 'ordinary BTW prefix binding';
   const ordinary = await sdk.session.fork({ sessionID: parent.id });
@@ -206,7 +209,7 @@ try {
     originalSystemBaselineAfterInstructionUpdate: true, unchangedMainMessagesPrefix: true, unchangedToolsAndOptions: true,
     automationMetadataExcluded: true, productionPinsPreserved: true, retiredSnapshotsEmpty: true, oldMessageLinksResolve: true,
     repeatedPremiseDeduplicated: true, nativeHistoryRetained: true,
-    retiredAliasCountPerTurn: 2, expiredAndRetiredPromptsRejected: true,
+    retiredAliasCountPerTurn: 2, staleMetadataCannotReplaceLease: true, retiredPromptsRejected: true,
     runtimeSwitchForkCleanup: true, failedMaterializationCleanup: true, ordinaryBtwPrefixPreserved: true,
     uncapturedMainReservesWithoutModelRequest: true,
     noParentNotificationRequests: true, rootDeletionCleansExecutionHeads: true, concurrentRootDeletionCleansCandidate: true,

@@ -40,7 +40,15 @@ It registers no model-facing tools and changes no tool definitions.
 
 Every browser and desktop client of one OpenCode instance reaches the same location plugin.
 A browser lock covers only one origin and browser profile.
-The coordinator's reservation survives client disconnects and plugin reloads in session metadata.
+The coordinator stores its root state in plugin storage across client disconnects and plugin reloads.
+Session metadata contains a projection for the native interface.
+If another host writer replaces that projection, session events restore it from plugin storage.
+Only known roots receive this synchronization.
+Synchronization preserves unrelated host metadata beside the container.
+
+The root uses `openchamber.btwLiveContainer` while execution heads keep their own markers.
+OpenChamber 2.8 removes metadata that a native child shares with its parent.
+Separate container metadata preserves the head's deliberate ownership and context pins.
 
 ## Why retired sessions remain as redirects
 
@@ -59,7 +67,7 @@ Later questions use the main baseline after the hook captures it.
 
 ## Why logical containers do not request a model
 
-OpenCode 2.2.7 sends child completion reports to a native parent and can start another model request there.
+OpenCode 2.3.2 sends child completion reports to a native parent and can start another model request there.
 The root identifies the side conversation and stores its permission choice.
 Its execution head answers the user.
 The coordinator interrupts container requests before they reach a provider and clears old container notices on the next send.

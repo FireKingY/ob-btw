@@ -19,7 +19,19 @@ export type CoordinatorContext = {
 const LEASE_MS = 5 * 60_000;
 const object = (value: unknown): RecordValue => value && typeof value === 'object' && !Array.isArray(value) ? value as RecordValue : {};
 const text = (value: unknown): string | undefined => typeof value === 'string' && value.length > 0 ? value : undefined;
-const namespace = (session: SessionInfo) => object(session.metadata?.openchamber);
+const namespace = (session: SessionInfo) => {
+  const value = object(session.metadata?.openchamber);
+  return value.btwLiveContainer ? object(value.btwLiveContainer) : value;
+};
+const containerMetadata = (value: RecordValue, metadata?: SessionInfo['metadata']): RecordValue => {
+  const openchamber = { ...object(metadata?.openchamber) };
+  if (openchamber.kind === 'btw' && openchamber.btwMode === 'live') {
+    for (const key of Object.keys(openchamber)) {
+      if (key.startsWith('btw') || ['kind', 'originalSessionID', 'project_context_pins'].includes(key)) delete openchamber[key];
+    }
+  }
+  return { openchamber: { ...openchamber, btwLiveContainer: value } };
+};
 const live = (session: SessionInfo) => namespace(session).kind === 'btw' && namespace(session).btwMode === 'live';
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 const json = (value: unknown): Json => clone(value) as Json;
@@ -42,16 +54,46 @@ export function createCoordinator(ctx: CoordinatorContext) {
   const locks = new Set<string>();
   let disposed = false;
   const events = new AbortController();
+  const projections = new Map<string, Promise<void>>();
+  const knownRoots = new Set<string>();
+  const projectRoot = (id: string): Promise<void> => {
+    const pending = (projections.get(id) ?? Promise.resolve()).catch(() => {}).then(async () => {
+      if (disposed) return;
+      const saved = object(await ctx.storage.get(`root/${id}`));
+      if (saved.btwLiveRootSessionID !== id) return;
+      const current = await ctx.session.get({ sessionID: id });
+      const metadata = { ...current.metadata, ...containerMetadata(saved, current.metadata) };
+      if (JSON.stringify(current.metadata?.openchamber) === JSON.stringify(metadata.openchamber)) return;
+      await ctx.session.update({ sessionID: id, metadata });
+    });
+    projections.set(id, pending);
+    void pending.finally(() => { if (projections.get(id) === pending) projections.delete(id); }).catch(() => {});
+    return pending;
+  };
   void (async () => {
-    for await (const event of ctx.event.subscribe({ types: ['session.deleted'], signal: events.signal })) {
+    for await (const event of ctx.event.subscribe({ types: ['session.deleted', 'session.updated'], signal: events.signal })) {
       const id = event.data.sessionID;
       if (!id) continue;
-      await Promise.all([ctx.storage.remove(`prefix/${id}`), ctx.storage.remove(`head-prefix/${id}`), ctx.storage.remove(`lease-prefix/${id}`)]);
+      if (event.type === 'session.updated' && !knownRoots.has(id)) continue;
+      try {
+        if (event.type === 'session.updated') await projectRoot(id);
+        else {
+          knownRoots.delete(id);
+          await Promise.all([ctx.storage.remove(`root/${id}`), ctx.storage.remove(`prefix/${id}`), ctx.storage.remove(`head-prefix/${id}`), ctx.storage.remove(`lease-prefix/${id}`)]);
+        }
+      } catch (error) {
+        if (!events.signal.aborted) console.warn('BTW metadata synchronization failed:', error instanceof Error ? error.message : 'session unavailable');
+      }
     }
   })().catch((error) => { if (!events.signal.aborted) console.warn('BTW prefix cleanup stopped:', error instanceof Error ? error.message : 'event stream ended'); });
   const owned = async (sessionID: string) => {
     const session = await ctx.session.get({ sessionID });
     if (session.location.directory !== ctx.location.directory) throw new Refusal('conflict', 'The live conversation moved. Reopen it before sending.');
+    const saved = object(await ctx.storage.get(`root/${sessionID}`));
+    if (saved.btwLiveRootSessionID === sessionID) {
+      knownRoots.add(sessionID);
+      return { ...session, metadata: { ...session.metadata, ...containerMetadata(saved, session.metadata) } };
+    }
     return session;
   };
   const locked = async <T>(id: string, work: () => Promise<T>): Promise<T> => {
@@ -61,7 +103,12 @@ export function createCoordinator(ctx: CoordinatorContext) {
   };
   const update = async (id: string, change: RecordValue) => {
     const current = await owned(id);
-    await ctx.session.update({ sessionID: id, metadata: { ...current.metadata, openchamber: { ...namespace(current), ...change } } });
+    const next = { ...namespace(current), ...change };
+    if (object(current.metadata?.openchamber).btwLiveContainer) {
+      knownRoots.add(id);
+      await ctx.storage.set(`root/${id}`, next);
+      await projectRoot(id);
+    } else await ctx.session.update({ sessionID: id, metadata: { ...current.metadata, openchamber: next } });
   };
   const prefixOf = async (sessionID: string) => {
     const saved = object(await ctx.storage.get(`prefix/${sessionID}`));
@@ -85,20 +132,23 @@ export function createCoordinator(ctx: CoordinatorContext) {
       const parent = live(source) ? await owned(String(namespace(source).originalSessionID)) : source;
       const metadata = sideMetadata(parent, parent.id, '');
       object(metadata.openchamber).btwLiveLease = { token, expiresAt: Date.now() + LEASE_MS };
-      root = await ctx.session.create({ location: parent.location, title: 'live-btw', agent: parent.agent, model: parent.model, metadata });
+      root = await ctx.session.create({ location: parent.location, title: 'live-btw', agent: parent.agent, model: parent.model,
+        metadata: containerMetadata(object(metadata.openchamber)) });
       created = true;
     }
     return locked(root.id, async () => {
       let prefixWritten = false;
       try {
         root = await owned(root.id);
-        if (namespace(root).btwCoordinatorVersion !== 2) {
+        if (namespace(root).btwCoordinatorVersion !== 2 || !object(root.metadata?.openchamber).btwLiveContainer) {
           const previous = namespace(root);
           const cleaned = sideMetadata(root, String(previous.originalSessionID), root.id);
           for (const key of ['btwLiveHeadSessionID', 'btwBoundaryMessageID', 'btwSnapshotAt', 'btwLiveRetire', 'btwLiveMessageAliases', 'btwLiveRetired', 'btwLiveLease']) {
             if (previous[key] !== undefined) object(cleaned.openchamber)[key] = previous[key];
           }
-          await ctx.session.update({ sessionID: root.id, metadata: cleaned });
+          await ctx.storage.set(`root/${root.id}`, object(cleaned.openchamber));
+          knownRoots.add(root.id);
+          await projectRoot(root.id);
           root = await owned(root.id);
         }
         const lease = object(namespace(root).btwLiveLease);
@@ -269,7 +319,7 @@ export function createCoordinator(ctx: CoordinatorContext) {
       const session = await owned(event.sessionID);
       if (live(session) && (text(namespace(session).btwLiveRootSessionID) ?? session.id) === session.id
         && (currentHead(session) !== session.id || object(namespace(session).btwLiveLease).created === true)) {
-        // Native child-completion notices can wake the bookkeeping root on OpenCode 2.2.7.
+        // Native child-completion notices can wake the bookkeeping root on OpenCode 2.3.2.
         await ctx.session.interrupt({ sessionID: session.id, resume: false });
         return;
       }

@@ -1,8 +1,8 @@
 # Side-chat cache verification
 
 The earlier placement test used `codex/gpt-6.1-sol` through the local Magpie Responses API.
-Version 1.5 uses the same boundary placement.
-Its new scenarios measure request equality with a deterministic provider.
+Version 1.7 uses the same boundary placement.
+Its compatibility scenarios measure request equality with a deterministic provider.
 The requests use synthetic reference records, the exact public Codex boundary text, and the current read-only instruction.
 The boundary matches the pinned [public source](https://github.com/openai/codex/blob/8703d32bd0ea5cf26768859a3dd476df906ba053/codex-rs/context-fragments/src/side_conversation.rs).
 
@@ -32,7 +32,7 @@ The captured side request preserves all 4 messages of the latest running parent 
 The comparison includes message roles, text, assistant tool calls, and tool results.
 Both serialized prefixes have this SHA-256:
 
-`39120967f94376542f68c023f42aa236e643b92189c9d28db41a3d8568319feb`
+`5d304af4381a9152d94c2d1073e639a112338d7e14c1e4e17ca34268d020351b`
 
 The model, tool definitions, and all other request options match exactly.
 The fixed boundary and read-only instruction follow the inherited history.
@@ -42,9 +42,9 @@ Its new reminder follows that prefix.
 Appending the boundary alone sends no provider request.
 Project conversations can produce different ratios because their models, tools, and context differ.
 
-The current numerical evidence is in `verification/cache-read-only-live.json`.
+The historical provider measurements are in `verification/cache-read-only-live.json`.
 The earlier boundary-only experiment remains in `verification/cache-live.json`.
-The native agent and prefix comparison is in `verification/same-agent-after.json`.
+The current native agent and prefix comparison is in `verification/ordinary-prefix-proof.json`.
 The public record contains comparison results and hashes.
 Raw requests contain local environment instructions and stay outside this repository.
 The earlier behavior, with Build in the parent and Plan in the side chat, is in `verification/same-agent-before.json`.
@@ -73,7 +73,8 @@ The coordinator restores the captured baseline for the same agent, provider and 
 The coordinator scenario changes an instruction entry after the first main request.
 The next main request retains the original system baseline and carries the update in history.
 Both live BTW and ordinary BTW preserve that complete main prefix in the recorded provider request.
-The scenario also checks concurrent clients, expired sends, snapshot cleanup and stable message links.
+The scenario also checks concurrent clients, stale metadata, snapshot cleanup and stable message links.
+The coordinator unit tests cover expired sends after a plugin reload.
 The results are in `verification/coordinator-proof.json`.
 Draft and quotation behavior is recorded in `verification/quote-migration-proof.json`.
 That scenario also covers selected-text insertion and undo restoration after a live rebuild.
@@ -102,3 +103,19 @@ The coordinator scenario includes instruction updates with HTML characters.
 It compares the complete provider prefix and counts model requests after child completion.
 The native live scenario uses the server policy resolver to examine permission inheritance after each context rebuild.
 The compatibility results are in `verification/host-2.7.2.json`.
+
+## OpenChamber 2.8.0 compatibility
+
+Version 1.7 targets OpenChamber 2.8.0 and OpenCode 2.3.2.
+It uses the host's split composer, chat column, message ordering and undo code.
+The coordinator stores reservations in plugin storage because host metadata updates can restore an older copy.
+The logical container keeps separate metadata so parent inheritance preserves the execution session's ownership and pins.
+Tests cover an expired reservation and an older metadata update after a plugin reload.
+The legacy-root case retains context pins and removes shared parent markers during migration.
+Native scenarios cover ordinary snapshots, repeated live questions, quotations, undo, permission inheritance and failed sends.
+The request comparisons include the complete main prefix, tools and options.
+The compatibility results are in `verification/host-2.8.0.json`.
+The upstream behavior run covered 505 scenarios across an initial run and a resumed run.
+All final results passed, with one automatic retry in the skills editor.
+The aggregate record is `verification/behavior-2.8.0.json`.
+The historical provider cache measurements remain separate from these request comparisons.

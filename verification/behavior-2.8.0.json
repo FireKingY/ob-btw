@@ -1,0 +1,2047 @@
+{
+  "hostVersion": "2.8.0",
+  "extensionVersion": "1.7.0",
+  "opencodeVersion": "2.3.2",
+  "scenarios": 505,
+  "passed": 505,
+  "failed": 0,
+  "initialRun": {
+    "completed": 315,
+    "passed": 311,
+    "failed": 4,
+    "stopReason": "The command reached its one-hour limit."
+  },
+  "resumedRun": {
+    "remainingScenarios": 190,
+    "recheckedScenarios": 4,
+    "passed": 194,
+    "failed": 0,
+    "automaticRetryPassed": [
+      "skills.create.agents-location"
+    ]
+  },
+  "updatedScenario": "composer.modes.btw opens the native side composer and closes the panel with the Chat rail button.",
+  "scope": "The initial and resumed runs cover every selected scenario. Results use isolated development instances and a deterministic provider.",
+  "results": [
+    {
+      "id": "agents.create.cancel",
+      "passed": true
+    },
+    {
+      "id": "agents.create.project",
+      "passed": true
+    },
+    {
+      "id": "agents.create.taken",
+      "passed": true
+    },
+    {
+      "id": "agents.create.write-failure",
+      "passed": true
+    },
+    {
+      "id": "agents.edit.autosave",
+      "passed": true
+    },
+    {
+      "id": "agents.edit.write-failure",
+      "passed": true
+    },
+    {
+      "id": "agents.manage.delete",
+      "passed": true
+    },
+    {
+      "id": "agents.manage.delete-failure",
+      "passed": true
+    },
+    {
+      "id": "agents.manage.disable-enable",
+      "passed": true
+    },
+    {
+      "id": "agents.manage.duplicate",
+      "passed": true
+    },
+    {
+      "id": "agents.manage.last-primary",
+      "passed": true
+    },
+    {
+      "id": "agents.manage.rename",
+      "passed": true
+    },
+    {
+      "id": "agents.manage.rename-taken",
+      "passed": true
+    },
+    {
+      "id": "agents.model.no-match",
+      "passed": true
+    },
+    {
+      "id": "agents.model.override-clear",
+      "passed": true
+    },
+    {
+      "id": "agents.permissions.custom-key",
+      "passed": true
+    },
+    {
+      "id": "agents.permissions.effects",
+      "passed": true
+    },
+    {
+      "id": "agents.permissions.patterns",
+      "passed": true
+    },
+    {
+      "id": "agents.permissions.read-failure",
+      "passed": true
+    },
+    {
+      "id": "agents.search.description-empty",
+      "passed": true
+    },
+    {
+      "id": "chat.actions.copy",
+      "passed": true
+    },
+    {
+      "id": "chat.actions.revert",
+      "passed": true
+    },
+    {
+      "id": "chat.activity.remount",
+      "passed": true
+    },
+    {
+      "id": "chat.activity.search-reveal",
+      "passed": true
+    },
+    {
+      "id": "chat.activity.toggle",
+      "passed": true
+    },
+    {
+      "id": "chat.activity.with-text",
+      "passed": true
+    },
+    {
+      "id": "chat.activity.with-text-live",
+      "passed": true
+    },
+    {
+      "id": "chat.changed-files.more",
+      "passed": true
+    },
+    {
+      "id": "chat.changed-files.open",
+      "passed": true
+    },
+    {
+      "id": "chat.changed-files.pills",
+      "passed": true
+    },
+    {
+      "id": "chat.draft.first-prompt",
+      "passed": true
+    },
+    {
+      "id": "chat.draft.phone-starter",
+      "passed": true
+    },
+    {
+      "id": "chat.expand.toggle",
+      "passed": true
+    },
+    {
+      "id": "chat.failure.provider-down",
+      "passed": true
+    },
+    {
+      "id": "chat.footer.ask-models",
+      "passed": true
+    },
+    {
+      "id": "chat.footer.copy-link",
+      "passed": true
+    },
+    {
+      "id": "chat.footer.facts",
+      "passed": true
+    },
+    {
+      "id": "chat.footer.fork",
+      "passed": true
+    },
+    {
+      "id": "chat.footer.fork-load-retry",
+      "passed": true
+    },
+    {
+      "id": "chat.footer.image",
+      "passed": true
+    },
+    {
+      "id": "chat.footer.multi-run",
+      "passed": true
+    },
+    {
+      "id": "chat.footer.new-session",
+      "passed": true
+    },
+    {
+      "id": "chat.footer.pin",
+      "passed": true
+    },
+    {
+      "id": "chat.footer.plan",
+      "passed": true
+    },
+    {
+      "id": "chat.footer.select",
+      "passed": true
+    },
+    {
+      "id": "chat.history.agent-turn",
+      "passed": true
+    },
+    {
+      "id": "chat.history.answer-divider",
+      "passed": true
+    },
+    {
+      "id": "chat.history.tool-expand",
+      "passed": true
+    },
+    {
+      "id": "chat.live.fade",
+      "passed": true
+    },
+    {
+      "id": "chat.live.stream",
+      "passed": true
+    },
+    {
+      "id": "chat.load.retry",
+      "passed": true
+    },
+    {
+      "id": "chat.long-prompt.expand",
+      "passed": true
+    },
+    {
+      "id": "chat.markdown.document",
+      "passed": true
+    },
+    {
+      "id": "chat.navigate.arrows",
+      "passed": true
+    },
+    {
+      "id": "chat.navigate.prompt-navigator",
+      "passed": true
+    },
+    {
+      "id": "chat.navigate.rail",
+      "passed": true
+    },
+    {
+      "id": "chat.navigate.timeline",
+      "passed": true
+    },
+    {
+      "id": "chat.notices.retry",
+      "passed": true
+    },
+    {
+      "id": "chat.notices.shell",
+      "passed": true
+    },
+    {
+      "id": "chat.prompt.copy",
+      "passed": true
+    },
+    {
+      "id": "chat.prompt.fork",
+      "passed": true
+    },
+    {
+      "id": "chat.prompt.pin",
+      "passed": true
+    },
+    {
+      "id": "chat.prompt.select",
+      "passed": true
+    },
+    {
+      "id": "chat.prompt.snippet",
+      "passed": true
+    },
+    {
+      "id": "chat.questions.in-chat",
+      "passed": true
+    },
+    {
+      "id": "chat.reasoning.blocks",
+      "passed": true
+    },
+    {
+      "id": "chat.reasoning.inline",
+      "passed": true
+    },
+    {
+      "id": "chat.return.session-switch",
+      "passed": true
+    },
+    {
+      "id": "chat.scroll.older",
+      "passed": true
+    },
+    {
+      "id": "chat.scroll.to-bottom",
+      "passed": true
+    },
+    {
+      "id": "chat.search.find",
+      "passed": true
+    },
+    {
+      "id": "chat.selection.kept-text",
+      "passed": true
+    },
+    {
+      "id": "chat.selection.menu",
+      "passed": true
+    },
+    {
+      "id": "chat.side-panel.escape",
+      "passed": true
+    },
+    {
+      "id": "chat.step-actions.copy",
+      "passed": true
+    },
+    {
+      "id": "chat.sticky.prompt",
+      "passed": true
+    },
+    {
+      "id": "chat.subagent.panel",
+      "passed": true
+    },
+    {
+      "id": "chat.subagent.permission",
+      "passed": true
+    },
+    {
+      "id": "chat.subagent.phone-parent",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-conversation.failed-command",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-conversation.question",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-conversation.question-dismissed",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-conversation.subagent",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-files.diff-layout",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-files.open-at-change",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-files.open-diff",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-files.open-file",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-files.patch-files",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.failed-call",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.json-output",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.keyboard",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.openchamber-call",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.openchamber-failure",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.opencode-call",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.script-calls",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.script-truncated",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.search-output",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.shell-output",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.task-list",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-rows.write-preview",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-running.background-command",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-running.stop-command",
+      "passed": true
+    },
+    {
+      "id": "chat.tool-running.stop-subagent",
+      "passed": true
+    },
+    {
+      "id": "chat.work-status.project",
+      "passed": true
+    },
+    {
+      "id": "commands.browse.search",
+      "passed": true
+    },
+    {
+      "id": "commands.create.cancel",
+      "passed": true
+    },
+    {
+      "id": "commands.create.global",
+      "passed": true
+    },
+    {
+      "id": "commands.create.project",
+      "passed": true
+    },
+    {
+      "id": "commands.create.required",
+      "passed": true
+    },
+    {
+      "id": "commands.create.taken",
+      "passed": true
+    },
+    {
+      "id": "commands.create.write-failure",
+      "passed": true
+    },
+    {
+      "id": "commands.edit.empty-template",
+      "passed": true
+    },
+    {
+      "id": "commands.edit.text",
+      "passed": true
+    },
+    {
+      "id": "commands.edit.write-failure",
+      "passed": true
+    },
+    {
+      "id": "commands.execution.agent",
+      "passed": true
+    },
+    {
+      "id": "commands.execution.model",
+      "passed": true
+    },
+    {
+      "id": "commands.manage.delete",
+      "passed": true
+    },
+    {
+      "id": "commands.manage.duplicate",
+      "passed": true
+    },
+    {
+      "id": "commands.manage.rename",
+      "passed": true
+    },
+    {
+      "id": "commands.manage.rename-failure",
+      "passed": true
+    },
+    {
+      "id": "commands.manage.rename-partial",
+      "passed": true
+    },
+    {
+      "id": "commands.manage.reset",
+      "passed": true
+    },
+    {
+      "id": "composer.agent.tab",
+      "passed": true
+    },
+    {
+      "id": "composer.attach.document-ask",
+      "passed": true
+    },
+    {
+      "id": "composer.attach.document-save",
+      "passed": true
+    },
+    {
+      "id": "composer.attach.drop",
+      "passed": true
+    },
+    {
+      "id": "composer.attach.picker",
+      "passed": true
+    },
+    {
+      "id": "composer.autocomplete.command",
+      "passed": true
+    },
+    {
+      "id": "composer.autocomplete.emoji",
+      "passed": true
+    },
+    {
+      "id": "composer.autocomplete.mention",
+      "passed": true
+    },
+    {
+      "id": "composer.autocomplete.skill",
+      "passed": true
+    },
+    {
+      "id": "composer.autocomplete.slash",
+      "passed": true
+    },
+    {
+      "id": "composer.draft-start.starter",
+      "passed": true
+    },
+    {
+      "id": "composer.draft.per-session",
+      "passed": true
+    },
+    {
+      "id": "composer.draft.reload",
+      "passed": true
+    },
+    {
+      "id": "composer.draft.reload-after-send",
+      "passed": true
+    },
+    {
+      "id": "composer.draft.reload-while-sending",
+      "passed": true
+    },
+    {
+      "id": "composer.draft.reload-while-sending-first",
+      "passed": true
+    },
+    {
+      "id": "composer.draft.reload-while-sending-project",
+      "passed": true
+    },
+    {
+      "id": "composer.history.arrow-down",
+      "passed": true
+    },
+    {
+      "id": "composer.history.arrow-up",
+      "passed": true
+    },
+    {
+      "id": "composer.history.search",
+      "passed": true
+    },
+    {
+      "id": "composer.markdown.fence",
+      "passed": true
+    },
+    {
+      "id": "composer.markdown.list",
+      "passed": true
+    },
+    {
+      "id": "composer.markdown.wrap",
+      "passed": true
+    },
+    {
+      "id": "composer.modes.btw",
+      "passed": true
+    },
+    {
+      "id": "composer.modes.expanded-escape",
+      "passed": true
+    },
+    {
+      "id": "composer.modes.permissions",
+      "passed": true
+    },
+    {
+      "id": "composer.queue.arrow-up",
+      "passed": true
+    },
+    {
+      "id": "composer.queue.mod-enter",
+      "passed": true
+    },
+    {
+      "id": "composer.queue.send-now",
+      "passed": true
+    },
+    {
+      "id": "composer.recover.provider-down",
+      "passed": true
+    },
+    {
+      "id": "composer.send.alt-enter",
+      "passed": true
+    },
+    {
+      "id": "composer.send.blank",
+      "passed": true
+    },
+    {
+      "id": "composer.send.button",
+      "passed": true
+    },
+    {
+      "id": "composer.send.enter",
+      "passed": true
+    },
+    {
+      "id": "composer.send.shift-enter",
+      "passed": true
+    },
+    {
+      "id": "composer.shell.backspace",
+      "passed": true
+    },
+    {
+      "id": "composer.shell.escape",
+      "passed": true
+    },
+    {
+      "id": "composer.shell.mid-text",
+      "passed": true
+    },
+    {
+      "id": "composer.stop.click",
+      "passed": true
+    },
+    {
+      "id": "config.defaults.chats-agent",
+      "passed": true
+    },
+    {
+      "id": "config.defaults.chats-missing-model",
+      "passed": true
+    },
+    {
+      "id": "config.defaults.chats-model",
+      "passed": true
+    },
+    {
+      "id": "config.defaults.chats-settings-page",
+      "passed": true
+    },
+    {
+      "id": "config.defaults.missing-model",
+      "passed": true
+    },
+    {
+      "id": "config.defaults.opencode-config",
+      "passed": true
+    },
+    {
+      "id": "config.defaults.settings-agent",
+      "passed": true
+    },
+    {
+      "id": "config.defaults.settings-model",
+      "passed": true
+    },
+    {
+      "id": "config.defaults.settings-page",
+      "passed": true
+    },
+    {
+      "id": "config.pick.agent-switch",
+      "passed": true
+    },
+    {
+      "id": "config.pick.new-session",
+      "passed": true
+    },
+    {
+      "id": "config.voice.read-aloud",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.agent-edit",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.binary",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.clean",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.editor-save",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.expand-all",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.file-comment",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.gone-file",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.image",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.large",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.live",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.next-file",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.open-in-editor",
+      "passed": true
+    },
+    {
+      "id": "diff.changes.outside-change",
+      "passed": true
+    },
+    {
+      "id": "diff.comment.empty",
+      "passed": true
+    },
+    {
+      "id": "diff.comment.line",
+      "passed": true
+    },
+    {
+      "id": "diff.comment.range",
+      "passed": true
+    },
+    {
+      "id": "diff.context.expand",
+      "passed": true
+    },
+    {
+      "id": "diff.find.large",
+      "passed": true
+    },
+    {
+      "id": "diff.find.walk",
+      "passed": true
+    },
+    {
+      "id": "diff.find.word",
+      "passed": true
+    },
+    {
+      "id": "diff.hunk.discard",
+      "passed": true
+    },
+    {
+      "id": "diff.hunk.stage",
+      "passed": true
+    },
+    {
+      "id": "diff.hunk.unstage",
+      "passed": true
+    },
+    {
+      "id": "diff.layout.side-by-side",
+      "passed": true
+    },
+    {
+      "id": "diff.reveal.older-turn-file",
+      "passed": true
+    },
+    {
+      "id": "diff.reveal.older-turn-mobile",
+      "passed": true
+    },
+    {
+      "id": "diff.reveal.tool-row",
+      "passed": true
+    },
+    {
+      "id": "diff.reveal.turn-file",
+      "passed": true
+    },
+    {
+      "id": "diff.scope.commit",
+      "passed": true
+    },
+    {
+      "id": "diff.scope.last-turn",
+      "passed": true
+    },
+    {
+      "id": "diff.toolbar.review",
+      "passed": true
+    },
+    {
+      "id": "diff.toolbar.walkthrough",
+      "passed": true
+    },
+    {
+      "id": "diff.view.layout-all",
+      "passed": true
+    },
+    {
+      "id": "diff.view.tree",
+      "passed": true
+    },
+    {
+      "id": "diff.view.whitespace",
+      "passed": true
+    },
+    {
+      "id": "diff.view.wrap",
+      "passed": true
+    },
+    {
+      "id": "files.contents.find",
+      "passed": true
+    },
+    {
+      "id": "files.contents.regex",
+      "passed": true
+    },
+    {
+      "id": "files.contents.to-chat",
+      "passed": true
+    },
+    {
+      "id": "files.edit.autosave",
+      "passed": true
+    },
+    {
+      "id": "files.edit.autosave-off",
+      "passed": true
+    },
+    {
+      "id": "files.edit.deleted",
+      "passed": true
+    },
+    {
+      "id": "files.edit.git-revert",
+      "passed": true
+    },
+    {
+      "id": "files.edit.outside-change",
+      "passed": true
+    },
+    {
+      "id": "files.edit.outside-while-dirty",
+      "passed": true
+    },
+    {
+      "id": "files.edit.save",
+      "passed": true
+    },
+    {
+      "id": "files.manage.copy-path",
+      "passed": true
+    },
+    {
+      "id": "files.manage.delete",
+      "passed": true
+    },
+    {
+      "id": "files.manage.download",
+      "passed": true
+    },
+    {
+      "id": "files.manage.new-file",
+      "passed": true
+    },
+    {
+      "id": "files.manage.new-folder",
+      "passed": true
+    },
+    {
+      "id": "files.manage.new-in-folder",
+      "passed": true
+    },
+    {
+      "id": "files.manage.rename",
+      "passed": true
+    },
+    {
+      "id": "files.manage.rename-taken",
+      "passed": true
+    },
+    {
+      "id": "files.move.cancel",
+      "passed": true
+    },
+    {
+      "id": "files.move.confirm",
+      "passed": true
+    },
+    {
+      "id": "files.move.name-taken",
+      "passed": true
+    },
+    {
+      "id": "files.move.never-ask",
+      "passed": true
+    },
+    {
+      "id": "files.move.search-to-chat",
+      "passed": true
+    },
+    {
+      "id": "files.move.to-chat",
+      "passed": true
+    },
+    {
+      "id": "files.move.to-root",
+      "passed": true
+    },
+    {
+      "id": "files.open.from-chat",
+      "passed": true
+    },
+    {
+      "id": "files.open.from-tree",
+      "passed": true
+    },
+    {
+      "id": "files.open.import-link",
+      "passed": true
+    },
+    {
+      "id": "files.open.import-missing",
+      "passed": true
+    },
+    {
+      "id": "files.open.preview-pin",
+      "passed": true
+    },
+    {
+      "id": "files.open.read-error",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.code-view",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.comment",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.copy-contents",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.copy-path",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.export-word",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.find",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.go-to-line",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.html",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.json-tree",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.markdown-source",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.save-file",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.svg",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.symbols",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.table",
+      "passed": true
+    },
+    {
+      "id": "files.toolbar.wrap",
+      "passed": true
+    },
+    {
+      "id": "files.tree.after-revert",
+      "passed": true
+    },
+    {
+      "id": "files.tree.browse",
+      "passed": true
+    },
+    {
+      "id": "files.tree.collapse",
+      "passed": true
+    },
+    {
+      "id": "files.tree.dotfiles",
+      "passed": true
+    },
+    {
+      "id": "files.tree.git-marks",
+      "passed": true
+    },
+    {
+      "id": "files.tree.gitignored",
+      "passed": true
+    },
+    {
+      "id": "files.tree.list-error",
+      "passed": true
+    },
+    {
+      "id": "files.tree.micro-drag",
+      "passed": true
+    },
+    {
+      "id": "files.tree.modified",
+      "passed": true
+    },
+    {
+      "id": "files.tree.refresh",
+      "passed": true
+    },
+    {
+      "id": "files.tree.reveal",
+      "passed": true
+    },
+    {
+      "id": "files.tree.root-error",
+      "passed": true
+    },
+    {
+      "id": "files.tree.search",
+      "passed": true
+    },
+    {
+      "id": "files.tree.search-clear",
+      "passed": true
+    },
+    {
+      "id": "files.tree.tab-back",
+      "passed": true
+    },
+    {
+      "id": "files.tree.wide",
+      "passed": true
+    },
+    {
+      "id": "files.upload.drop-folder",
+      "passed": true
+    },
+    {
+      "id": "files.upload.drop-root",
+      "passed": true
+    },
+    {
+      "id": "files.upload.picker",
+      "passed": true
+    },
+    {
+      "id": "files.upload.picker-folder",
+      "passed": true
+    },
+    {
+      "id": "files.upload.replace",
+      "passed": true
+    },
+    {
+      "id": "git.branches.create-switch",
+      "passed": true
+    },
+    {
+      "id": "git.branches.dirty-cancel",
+      "passed": true
+    },
+    {
+      "id": "git.branches.dirty-commit",
+      "passed": true
+    },
+    {
+      "id": "git.branches.dirty-revert",
+      "passed": true
+    },
+    {
+      "id": "git.branches.empty",
+      "passed": true
+    },
+    {
+      "id": "git.changes.all",
+      "passed": true
+    },
+    {
+      "id": "git.changes.file",
+      "passed": true
+    },
+    {
+      "id": "git.changes.fold",
+      "passed": true
+    },
+    {
+      "id": "git.changes.revert-all",
+      "passed": true
+    },
+    {
+      "id": "git.changes.revert-file",
+      "passed": true
+    },
+    {
+      "id": "git.changes.stage-error",
+      "passed": true
+    },
+    {
+      "id": "git.changes.tree-folder",
+      "passed": true
+    },
+    {
+      "id": "git.commit.error",
+      "passed": true
+    },
+    {
+      "id": "git.commit.required",
+      "passed": true
+    },
+    {
+      "id": "git.commit.selected",
+      "passed": true
+    },
+    {
+      "id": "git.history.diff",
+      "passed": true
+    },
+    {
+      "id": "git.history.graph-cancel",
+      "passed": true
+    },
+    {
+      "id": "git.history.retry",
+      "passed": true
+    },
+    {
+      "id": "git.publish.no-remote",
+      "passed": true
+    },
+    {
+      "id": "git.stash.roundtrip",
+      "passed": true
+    },
+    {
+      "id": "integrations.cards.keyboard",
+      "passed": true
+    },
+    {
+      "id": "integrations.catalog.browse",
+      "passed": true
+    },
+    {
+      "id": "integrations.channels.read-failure",
+      "passed": true
+    },
+    {
+      "id": "integrations.extensions.install-failure",
+      "passed": true
+    },
+    {
+      "id": "integrations.instances.cancel",
+      "passed": true
+    },
+    {
+      "id": "integrations.instances.host",
+      "passed": true
+    },
+    {
+      "id": "integrations.instances.invalid",
+      "passed": true
+    },
+    {
+      "id": "integrations.instances.origin",
+      "passed": true
+    },
+    {
+      "id": "integrations.source-auth.read-failure",
+      "passed": true
+    },
+    {
+      "id": "integrations.tracker.start-failure",
+      "passed": true
+    },
+    {
+      "id": "mcp.browse.search",
+      "passed": true
+    },
+    {
+      "id": "mcp.delete.failure",
+      "passed": true
+    },
+    {
+      "id": "mcp.delete.grid",
+      "passed": true
+    },
+    {
+      "id": "mcp.draft.cancel",
+      "passed": true
+    },
+    {
+      "id": "mcp.draft.create",
+      "passed": true
+    },
+    {
+      "id": "mcp.draft.duplicate",
+      "passed": true
+    },
+    {
+      "id": "mcp.draft.required",
+      "passed": true
+    },
+    {
+      "id": "mcp.edit.advanced",
+      "passed": true
+    },
+    {
+      "id": "mcp.edit.metadata-invalid",
+      "passed": true
+    },
+    {
+      "id": "mcp.edit.remote",
+      "passed": true
+    },
+    {
+      "id": "mcp.edit.save-failure",
+      "passed": true
+    },
+    {
+      "id": "mcp.environment.invalid",
+      "passed": true
+    },
+    {
+      "id": "mcp.environment.merge-remove",
+      "passed": true
+    },
+    {
+      "id": "mcp.import.clipboard-denied",
+      "passed": true
+    },
+    {
+      "id": "mcp.import.invalid",
+      "passed": true
+    },
+    {
+      "id": "mcp.import.local",
+      "passed": true
+    },
+    {
+      "id": "mcp.import.remote",
+      "passed": true
+    },
+    {
+      "id": "mcp.runtime.local",
+      "passed": true
+    },
+    {
+      "id": "mcp.runtime.refresh-failure",
+      "passed": true
+    },
+    {
+      "id": "mcp.runtime.unreachable",
+      "passed": true
+    },
+    {
+      "id": "model-picker.actions.add-provider",
+      "passed": true
+    },
+    {
+      "id": "model-picker.actions.parallel",
+      "passed": true
+    },
+    {
+      "id": "model-picker.favorites.keep-focus",
+      "passed": true
+    },
+    {
+      "id": "model-picker.favorites.recent-dedup",
+      "passed": true
+    },
+    {
+      "id": "model-picker.favorites.reorder",
+      "passed": true
+    },
+    {
+      "id": "model-picker.keyboard.current",
+      "passed": true
+    },
+    {
+      "id": "model-picker.keyboard.wrap",
+      "passed": true
+    },
+    {
+      "id": "model-picker.phone.collapsed-search",
+      "passed": true
+    },
+    {
+      "id": "model-picker.phone.details",
+      "passed": true
+    },
+    {
+      "id": "model-picker.search.empty-recover",
+      "passed": true
+    },
+    {
+      "id": "model-picker.search.model-id",
+      "passed": true
+    },
+    {
+      "id": "model-picker.search.provider",
+      "passed": true
+    },
+    {
+      "id": "model-picker.sections.persist",
+      "passed": true
+    },
+    {
+      "id": "openchamber.chat.modifier-send",
+      "passed": true
+    },
+    {
+      "id": "openchamber.chat.reasoning-options",
+      "passed": true
+    },
+    {
+      "id": "openchamber.editor.invalid-mapping",
+      "passed": true
+    },
+    {
+      "id": "openchamber.retention.archived",
+      "passed": true
+    },
+    {
+      "id": "openchamber.retention.nothing-old",
+      "passed": true
+    },
+    {
+      "id": "openchamber.shortcuts.cancel",
+      "passed": true
+    },
+    {
+      "id": "openchamber.shortcuts.clear-reset",
+      "passed": true
+    },
+    {
+      "id": "openchamber.shortcuts.rebind",
+      "passed": true
+    },
+    {
+      "id": "openchamber.theme-import.invalid-file",
+      "passed": true
+    },
+    {
+      "id": "openchamber.themes.choose",
+      "passed": true
+    },
+    {
+      "id": "openchamber.themes.mode",
+      "passed": true
+    },
+    {
+      "id": "openchamber.themes.no-match",
+      "passed": true
+    },
+    {
+      "id": "operator.done.dismiss",
+      "passed": true
+    },
+    {
+      "id": "operator.done.finish",
+      "passed": true
+    },
+    {
+      "id": "operator.done.stop",
+      "passed": true
+    },
+    {
+      "id": "operator.nest.count",
+      "passed": true
+    },
+    {
+      "id": "operator.nest.worktree",
+      "passed": true
+    },
+    {
+      "id": "operator.phone.done",
+      "passed": true
+    },
+    {
+      "id": "operator.phone.take-over",
+      "passed": true
+    },
+    {
+      "id": "operator.phone.worktree-menu",
+      "passed": true
+    },
+    {
+      "id": "operator.take-over.menu",
+      "passed": true
+    },
+    {
+      "id": "operator.take-over.worktree-composer",
+      "passed": true
+    },
+    {
+      "id": "operator.take-over.worktree-menu",
+      "passed": true
+    },
+    {
+      "id": "projects.actions.draft",
+      "passed": true
+    },
+    {
+      "id": "projects.actions.hide-delete",
+      "passed": true
+    },
+    {
+      "id": "projects.actions.roundtrip",
+      "passed": true
+    },
+    {
+      "id": "projects.actions.save-retry",
+      "passed": true
+    },
+    {
+      "id": "projects.close.confirm",
+      "passed": true
+    },
+    {
+      "id": "projects.environment.command",
+      "passed": true
+    },
+    {
+      "id": "projects.environment.failures",
+      "passed": true
+    },
+    {
+      "id": "projects.environment.variables",
+      "passed": true
+    },
+    {
+      "id": "projects.general.agent",
+      "passed": true
+    },
+    {
+      "id": "projects.general.invalid-team",
+      "passed": true
+    },
+    {
+      "id": "projects.general.plans-notes",
+      "passed": true
+    },
+    {
+      "id": "projects.general.read-retry",
+      "passed": true
+    },
+    {
+      "id": "projects.identity.appearance",
+      "passed": true
+    },
+    {
+      "id": "projects.identity.blank",
+      "passed": true
+    },
+    {
+      "id": "projects.identity.invalid-image",
+      "passed": true
+    },
+    {
+      "id": "projects.identity.rename",
+      "passed": true
+    },
+    {
+      "id": "projects.worktrees.commands",
+      "passed": true
+    },
+    {
+      "id": "projects.worktrees.create-wait",
+      "passed": true
+    },
+    {
+      "id": "projects.worktrees.scope-replace",
+      "passed": true
+    },
+    {
+      "id": "projects.worktrees.write-failure",
+      "passed": true
+    },
+    {
+      "id": "providers.browse.connect-search",
+      "passed": true
+    },
+    {
+      "id": "providers.browse.grid-search",
+      "passed": true
+    },
+    {
+      "id": "providers.custom.certificate",
+      "passed": true
+    },
+    {
+      "id": "providers.custom.connection-validation",
+      "passed": true
+    },
+    {
+      "id": "providers.custom.duplicate-model",
+      "passed": true
+    },
+    {
+      "id": "providers.custom.edit",
+      "passed": true
+    },
+    {
+      "id": "providers.custom.existing-id",
+      "passed": true
+    },
+    {
+      "id": "providers.custom.headers",
+      "passed": true
+    },
+    {
+      "id": "providers.custom.limits",
+      "passed": true
+    },
+    {
+      "id": "providers.custom.model-rows",
+      "passed": true
+    },
+    {
+      "id": "providers.custom.protocol-icon",
+      "passed": true
+    },
+    {
+      "id": "providers.custom.required",
+      "passed": true
+    },
+    {
+      "id": "providers.failures.discovery",
+      "passed": true
+    },
+    {
+      "id": "providers.failures.save",
+      "passed": true
+    },
+    {
+      "id": "providers.key.rejected",
+      "passed": true
+    },
+    {
+      "id": "providers.logo.invalid-file",
+      "passed": true
+    },
+    {
+      "id": "providers.logo.preview",
+      "passed": true
+    },
+    {
+      "id": "providers.models.filter",
+      "passed": true
+    },
+    {
+      "id": "providers.models.hide-one",
+      "passed": true
+    },
+    {
+      "id": "providers.models.hide-show-all",
+      "passed": true
+    },
+    {
+      "id": "skills.browse.search",
+      "passed": true
+    },
+    {
+      "id": "skills.catalog.unavailable",
+      "passed": true
+    },
+    {
+      "id": "skills.create.agents-location",
+      "passed": true
+    },
+    {
+      "id": "skills.create.cancel",
+      "passed": true
+    },
+    {
+      "id": "skills.create.invalid",
+      "passed": true
+    },
+    {
+      "id": "skills.create.project",
+      "passed": true
+    },
+    {
+      "id": "skills.create.taken",
+      "passed": true
+    },
+    {
+      "id": "skills.create.write-failure",
+      "passed": true
+    },
+    {
+      "id": "skills.edit.description-required",
+      "passed": true
+    },
+    {
+      "id": "skills.edit.document",
+      "passed": true
+    },
+    {
+      "id": "skills.edit.write-failure",
+      "passed": true
+    },
+    {
+      "id": "skills.files.delete",
+      "passed": true
+    },
+    {
+      "id": "skills.files.roundtrip",
+      "passed": true
+    },
+    {
+      "id": "skills.files.write-failure",
+      "passed": true
+    },
+    {
+      "id": "skills.manage.delete",
+      "passed": true
+    },
+    {
+      "id": "skills.manage.duplicate-read-failure",
+      "passed": true
+    },
+    {
+      "id": "skills.manage.rename",
+      "passed": true
+    },
+    {
+      "id": "skills.use.choices",
+      "passed": true
+    },
+    {
+      "id": "skills.use.policy",
+      "passed": true
+    },
+    {
+      "id": "skills.use.write-failure",
+      "passed": true
+    },
+    {
+      "id": "sync.list.new",
+      "passed": true
+    },
+    {
+      "id": "sync.list.switch",
+      "passed": true
+    },
+    {
+      "id": "sync.live.message",
+      "passed": true
+    },
+    {
+      "id": "sync.live.new-session",
+      "passed": true
+    },
+    {
+      "id": "sync.live.server-restart",
+      "passed": true
+    },
+    {
+      "id": "sync.manage.archive",
+      "passed": true
+    },
+    {
+      "id": "sync.manage.delete",
+      "passed": true
+    },
+    {
+      "id": "sync.manage.done",
+      "passed": true
+    },
+    {
+      "id": "sync.manage.rename",
+      "passed": true
+    },
+    {
+      "id": "sync.notify.in-view",
+      "passed": true
+    },
+    {
+      "id": "sync.notify.page-toast",
+      "passed": true
+    },
+    {
+      "id": "sync.notify.permission-toast",
+      "passed": true
+    },
+    {
+      "id": "sync.notify.question-toast",
+      "passed": true
+    },
+    {
+      "id": "sync.row-actions.shift-delete",
+      "passed": true
+    },
+    {
+      "id": "sync.row-actions.track",
+      "passed": true
+    },
+    {
+      "id": "sync.row-menu.export",
+      "passed": true
+    },
+    {
+      "id": "sync.row-menu.keyboard",
+      "passed": true
+    },
+    {
+      "id": "sync.row-menu.move",
+      "passed": true
+    },
+    {
+      "id": "sync.row-menu.new-folder",
+      "passed": true
+    },
+    {
+      "id": "sync.row-menu.pin",
+      "passed": true
+    },
+    {
+      "id": "sync.row-open.box-click",
+      "passed": true
+    },
+    {
+      "id": "sync.row-open.keyboard",
+      "passed": true
+    },
+    {
+      "id": "sync.row-open.side-panel",
+      "passed": true
+    },
+    {
+      "id": "sync.row-rename.click-away",
+      "passed": true
+    },
+    {
+      "id": "sync.row-rename.context-menu",
+      "passed": true
+    },
+    {
+      "id": "sync.row-rename.detailed",
+      "passed": true
+    },
+    {
+      "id": "sync.row-rename.double-click",
+      "passed": true
+    },
+    {
+      "id": "sync.row-rename.escape",
+      "passed": true
+    },
+    {
+      "id": "sync.row-select.pick",
+      "passed": true
+    },
+    {
+      "id": "sync.row-select.range",
+      "passed": true
+    },
+    {
+      "id": "sync.row-select.repeat",
+      "passed": true
+    },
+    {
+      "id": "sync.row-state.alt-click",
+      "passed": true
+    },
+    {
+      "id": "sync.row-state.goal",
+      "passed": true
+    },
+    {
+      "id": "sync.row-state.permission",
+      "passed": true
+    },
+    {
+      "id": "sync.row-state.question",
+      "passed": true
+    },
+    {
+      "id": "sync.row-state.running-unread",
+      "passed": true
+    },
+    {
+      "id": "sync.row-state.tooltip",
+      "passed": true
+    },
+    {
+      "id": "sync.row-tree.collapse",
+      "passed": true
+    },
+    {
+      "id": "sync.row-tree.detailed",
+      "passed": true
+    },
+    {
+      "id": "sync.search.title",
+      "passed": true
+    },
+    {
+      "id": "sync.sections.lift",
+      "passed": true
+    },
+    {
+      "id": "sync.sections.order",
+      "passed": true
+    },
+    {
+      "id": "sync.sections.turn",
+      "passed": true
+    },
+    {
+      "id": "sync.sections.unpin",
+      "passed": true
+    },
+    {
+      "id": "sync.seen.open-session",
+      "passed": true
+    },
+    {
+      "id": "terminal.clipboard.copy",
+      "passed": true
+    },
+    {
+      "id": "terminal.clipboard.paste",
+      "passed": true
+    },
+    {
+      "id": "terminal.clipboard.paste-denied",
+      "passed": true
+    },
+    {
+      "id": "terminal.context-menu.application-mouse",
+      "passed": true
+    },
+    {
+      "id": "terminal.history.hidden-output",
+      "passed": true
+    },
+    {
+      "id": "terminal.history.reload",
+      "passed": true
+    },
+    {
+      "id": "terminal.input.command",
+      "passed": true
+    },
+    {
+      "id": "terminal.input.menu-escape",
+      "passed": true
+    },
+    {
+      "id": "terminal.rename.blank",
+      "passed": true
+    },
+    {
+      "id": "terminal.rename.button",
+      "passed": true
+    },
+    {
+      "id": "terminal.rename.cancel",
+      "passed": true
+    },
+    {
+      "id": "terminal.rename.enter",
+      "passed": true
+    },
+    {
+      "id": "ui-blocks.decisions.phone",
+      "passed": true
+    },
+    {
+      "id": "ui-blocks.decisions.wide",
+      "passed": true
+    },
+    {
+      "id": "usage.browse.unconfigured",
+      "passed": true
+    },
+    {
+      "id": "usage.claude.catalog-unavailable",
+      "passed": true
+    },
+    {
+      "id": "usage.claude.command",
+      "passed": true
+    },
+    {
+      "id": "usage.credentials.empty",
+      "passed": true
+    },
+    {
+      "id": "usage.credentials.import-unavailable",
+      "passed": true
+    },
+    {
+      "id": "usage.credentials.write-retry",
+      "passed": true
+    },
+    {
+      "id": "usage.preferences.display",
+      "passed": true
+    },
+    {
+      "id": "usage.preferences.save-failure",
+      "passed": true
+    },
+    {
+      "id": "usage.preferences.work-status",
+      "passed": true
+    },
+    {
+      "id": "usage.refresh.failure-recovery",
+      "passed": true
+    },
+    {
+      "id": "usage.refresh.first-read",
+      "passed": true
+    },
+    {
+      "id": "workflows.approval.asks-first",
+      "passed": true
+    },
+    {
+      "id": "workflows.approval.starts-without-approval",
+      "passed": true
+    },
+    {
+      "id": "workspace.favorites.star",
+      "passed": true
+    },
+    {
+      "id": "workspace.font-size.scale",
+      "passed": true
+    },
+    {
+      "id": "workspace.overlays.palette-help",
+      "passed": true
+    },
+    {
+      "id": "workspace.pages.one-at-a-time",
+      "passed": true
+    },
+    {
+      "id": "workspace.panel.close-tab",
+      "passed": true
+    },
+    {
+      "id": "workspace.panel.expand",
+      "passed": true
+    },
+    {
+      "id": "workspace.panel.rail-toggle",
+      "passed": true
+    },
+    {
+      "id": "workspace.panel.tree-editor",
+      "passed": true
+    },
+    {
+      "id": "workspace.reasoning-toggle.palette",
+      "passed": true
+    },
+    {
+      "id": "workspace.settings.last-page",
+      "passed": true
+    },
+    {
+      "id": "workspace.sidebar.toggle",
+      "passed": true
+    }
+  ]
+}

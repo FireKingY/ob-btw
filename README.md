@@ -1,6 +1,6 @@
 # ob-btw
 
-Native BTW side conversations for OpenChamber. Extension version **1.6.0**.
+Native BTW side conversations for OpenChamber. Extension version **1.7.0**.
 
 This revision opens each BTW with the native OpenChamber chat panel.
 The native panel owns the transcript, Markdown, code blocks, tables, tools, composer, permissions, and streaming.
@@ -12,11 +12,11 @@ The extension contains no transcript renderer or message composer.
 Apply the companion host change before installing this revision.
 The host source checkout belongs in `../openchamber`.
 The host advertises `features.sideChat` and accepts `openSession(id, { navigation: 'side' })`.
-The published OpenChamber 2.7.2 SDK does not expose this operation.
+The published OpenChamber 2.8.0 SDK does not expose this operation.
 The extension build uses the compiled companion SDK through `tsconfig.json`.
-The package uses the SDK dependency at `2.7.2`.
+The package uses the SDK dependency at `2.8.0`.
 The compiled scripts need no source checkout at runtime.
-The target host bundles OpenCode 2.2.7.
+The target host uses OpenCode 2.3.2.
 The extension includes an OpenCode coordinator plugin.
 Its capability must be approved in **Settings > Extensions**.
 Managed OpenCode loads that plugin through its watched configuration.
@@ -26,14 +26,14 @@ Without the host change, the extension shows the missing capability and leaves t
 
 ## Install
 
-The host patch targets OpenChamber 2.7.2 at commit `1a151518c95cc5ff3578bab593d2f96862ff3bb8`.
+The host patch targets OpenChamber 2.8.0 at commit `30c70496a5ca0105e04e60a783964576973edc8f`.
 Use sibling checkouts for the host and extension:
 
 ```bash
 git clone https://github.com/FireKingY/ob-btw.git
 git clone https://github.com/openchamber/openchamber.git
 cd openchamber
-git checkout 1a151518c95cc5ff3578bab593d2f96862ff3bb8
+git checkout 30c70496a5ca0105e04e60a783964576973edc8f
 git apply --check ../ob-btw/host.patch
 git apply ../ob-btw/host.patch
 bun install --frozen-lockfile
@@ -46,12 +46,13 @@ In that host, open **Settings > Extensions** and add the local `ob-btw` folder.
 The repository includes the compiled panel and service scripts.
 It also includes `plugin/index.js` for the coordinator.
 
-Version 1.6 keeps the OpenChamber 2.7.2 composer text store and shared session menus.
+Version 1.7 uses the OpenChamber 2.8.0 composer and chat-column modules.
 The companion build uses the host's current Markdown renderer.
 Live execution heads keep their native parent for permission inheritance and deletion.
 The coordinator stops completion notifications from starting another model request in the logical container.
-Imported snapshots preserve instruction updates in their original history positions on OpenCode 2.2.7.
-The earlier [1.5.2 source and patch](https://github.com/FireKingY/ob-btw/tree/d7fd2036709e3c58d4210f6caa9856253f20480f) target OpenChamber 2.7.0.
+Imported snapshots preserve instruction updates in their original history positions on OpenCode 2.3.2.
+Transcript order follows the native server sequence.
+The earlier [1.6.0 source and patch](https://github.com/FireKingY/ob-btw/tree/8cf57f607938fe2d6ec49c7b415e84ddb093c5b1) target OpenChamber 2.7.2.
 
 Live conversations work immediately after the coordinator loads.
 They require no additional model request from the main chat.
@@ -67,6 +68,7 @@ RPC errors retain the coordinator's message.
 - Enter `/live-btw` to open a side chat that refreshes its main-session snapshot before each question.
 - Enter `/live-btw question` to open that live side chat and send its first question.
 - Use the native tabs to switch between multiple BTW sessions.
+- Select the Chat rail button to hide or reopen the native side panel.
 - Open the BTW rail icon to select an existing conversation.
 - In the session menu, select **New side chat**.
 - Press **Command+Option+S** on macOS or **Ctrl+Alt+S** on Windows and Linux.
@@ -155,6 +157,10 @@ A failed snapshot read preserves the previous conversation and restores the unse
 If the first model send fails, the prepared side conversation opens with its draft for retry.
 
 The coordinator reserves each live conversation across clients.
+Plugin storage holds the reservation and the current execution session across plugin reloads.
+Session metadata contains a copy for the interface.
+If a host update restores older metadata, the coordinator keeps its stored state and repairs the interface copy.
+The logical container uses separate metadata so native parent inheritance preserves each execution session's markers and context pins.
 An expired reservation cannot admit a prompt into an old transcript.
 Permission choices belong to the logical root and continue across context rebuilds.
 After successful admission, old execution transcripts are cleared with a transcript-only revert.
@@ -171,11 +177,13 @@ Without a captured baseline, changed instructions can produce a different system
 The same agent, provider and model are required for that shared prefix.
 Source Goal mode, review links and approvals do not become side-conversation control state.
 
-The live cache experiment uses the same boundary text, read-only instruction, and synthetic reference records.
+The earlier live cache experiment uses the same boundary text, read-only instruction, and synthetic reference records.
 Its results come from the provider's reported input and cached token counts.
 The report states the model and distinguishes the controlled experiment from UI verification.
 The native request capture compares the complete parent prefix and every non-message request option.
 It also compares the prefix on a side-chat follow-up.
+The 1.7 compatibility tests measure request equality with a deterministic provider.
+They do not measure current provider cache ratios.
 
 ## Existing conversations
 
@@ -207,6 +215,7 @@ The generator includes new files even before Git tracks them.
 The release check reconstructs a clean host from the pinned upstream commit.
 It compares the reconstructed source, builds that host and builds the extension against its SDK.
 The source checks include types, lint, unused code and the repository change gate.
+The release check copies the compiled extension scripts from that clean checkout and records their hashes.
 
 ```bash
 node scripts/build-host-patch.mjs
@@ -230,15 +239,17 @@ The native snapshot script requires Node.js with TypeScript support and an avail
 Set `BTW_PLAYWRIGHT_MODULE` to use a specific module path.
 Set `BTW_CHROME_EXECUTABLE` to use an installed Chrome executable.
 The script starts isolated OpenChamber, OpenCode, and fixture-provider instances.
+Set `OPENCODE_BINARY` to the OpenCode 2.3.2 executable for these isolated instances.
+The loader supports the host's Node.js server modules and UI TypeScript imports.
 
 ```bash
-node scripts/native-live-snapshot.ts
-node scripts/native-live-btw.ts
-node scripts/native-live-btw.ts --fail-first
-node scripts/native-live-btw.ts --cold-source
-node scripts/native-live-btw.ts --cold-source-update
-node scripts/quote-migration-proof.ts
-bun scripts/coordinator-proof.ts
+node --import ./scripts/proof-loader.mjs scripts/native-live-snapshot.ts
+node --import ./scripts/proof-loader.mjs scripts/native-live-btw.ts
+node --import ./scripts/proof-loader.mjs scripts/native-live-btw.ts --fail-first
+node --import ./scripts/proof-loader.mjs scripts/native-live-btw.ts --cold-source
+node --import ./scripts/proof-loader.mjs scripts/native-live-btw.ts --cold-source-update
+node --import ./scripts/proof-loader.mjs scripts/quote-migration-proof.ts
+node --import ./scripts/proof-loader.mjs scripts/coordinator-proof.ts
 ```
 
 The cache script requires a Responses API endpoint.

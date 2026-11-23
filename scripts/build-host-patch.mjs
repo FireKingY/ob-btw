@@ -7,7 +7,7 @@ const root = resolve(import.meta.dirname, '..');
 const host = resolve(process.env.BTW_HOST_DIR ?? resolve(root, '../openchamber'));
 const manifest = JSON.parse(await readFile(resolve(root, 'host-files.json'), 'utf8'));
 for (const file of manifest.files) {
-  if (!/^packages\/(?:ui\/src|sdk)\//.test(file) || file.split('/').includes('..')) throw new Error(`Invalid source path: ${file}`);
+  if ((!/^packages\/(?:ui\/src|sdk)\//.test(file) && file !== 'scripts/verify/zones/composer.json') || file.split('/').includes('..')) throw new Error(`Invalid source path: ${file}`);
 }
 let patch = execFileSync('git', ['diff', '--no-ext-diff', '--binary', manifest.baseCommit, '--', ...manifest.files], { cwd: host, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
 const included = new Set([...patch.matchAll(/^diff --git a\/(.+) b\/.+$/gm)].map((match) => match[1]));

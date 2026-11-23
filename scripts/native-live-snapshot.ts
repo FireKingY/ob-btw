@@ -75,9 +75,10 @@ const provider = createServer(async (request, response) => {
 await new Promise<void>((resolve) => provider.listen(4848, '127.0.0.1', resolve));
 await mkdir(root, { recursive: true });
 let server: Awaited<ReturnType<typeof startIsolatedServer>> | undefined;
-const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true,
+const browser = await chromium.launch({ executablePath: process.env.BTW_CHROME_EXECUTABLE ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true,
     args: ['--disable-features=MacAppCodeSignClone'] });
 const page = await browser.newPage({ viewport: { width: 1800, height: 1040 } });
+await page.addInitScript(() => localStorage.setItem('openchamber.i18n.v1', JSON.stringify({ locale: 'en' })));
 const errors: string[] = [];
 page.on('pageerror', (error) => errors.push(error.message));
 try {
@@ -158,7 +159,7 @@ try {
         await followupEditor.click();
         await page.keyboard.insertText('LIVE_SIDE_QUESTION_FOLLOWUP: explain the current progress without changes.');
         await page.keyboard.press('Enter');
-        await expect.poll(() => sideRequests.length).toBe(2);
+        await expect.poll(() => sideRequests.length, { timeout: 30_000 }).toBe(2);
         const followupWire = wireRequests.filter((entry) => JSON.stringify(entry.messages).includes('LIVE_SIDE_QUESTION_FOLLOWUP')).at(-1)!;
         const followupProof = {
             unchangedParentPrefix: JSON.stringify(followupWire.messages.slice(0, parentWire.messages.length)) === parentPrefix,

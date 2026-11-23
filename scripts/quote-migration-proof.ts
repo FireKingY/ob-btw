@@ -25,6 +25,7 @@ const provider = createServer(async (request, response) => {
 await new Promise<void>((resolve) => provider.listen(4848, '127.0.0.1', resolve));
 const browser = await chromium.launch({ executablePath: process.env.BTW_CHROME_EXECUTABLE, headless: true, args: ['--disable-features=MacAppCodeSignClone'] });
 const page = await browser.newPage({ viewport: { width: 1800, height: 1040 } });
+await page.addInitScript(() => localStorage.setItem('openchamber.i18n.v1', JSON.stringify({ locale: 'en' })));
 let server;
 let delayed = false;
 let waiting = false;
@@ -58,7 +59,7 @@ try {
   const oldHead = await side.getAttribute('data-chat-session-id');
   await sdk.experimental.session.wait({ sessionID: oldHead! });
   const logicalRoot = (await sdk.session.get({ sessionID: oldHead! })).metadata.openchamber.btwLiveRootSessionID;
-  await expect.poll(async () => (await sdk.session.get({ sessionID: logicalRoot })).metadata.openchamber.btwLiveLease).toBeNull();
+  await expect.poll(async () => (await sdk.session.get({ sessionID: logicalRoot })).metadata.openchamber.btwLiveContainer.btwLiveLease).toBeNull();
   await expect(side.locator('.cm-content')).toBeFocused();
   const selectAnswer = async () => {
     phase = 'select answer';
@@ -103,7 +104,7 @@ try {
   await page.keyboard.press('Meta+l');
   await expect(side.locator('.cm-content')).toContainText('FIRST_ANSWER');
   await side.locator('.cm-content').fill('');
-  await expect.poll(async () => (await sdk.session.get({ sessionID: logicalRoot })).metadata.openchamber.btwLiveLease).toBeNull();
+  await expect.poll(async () => (await sdk.session.get({ sessionID: logicalRoot })).metadata.openchamber.btwLiveContainer.btwLiveLease).toBeNull();
   await side.getByRole('button', { name: 'Revert to this message', exact: true }).last().click({ force: true });
   await expect(side.locator('.cm-content')).toHaveText('QUOTE_SECOND');
   await expect.poll(async () => Boolean((await sdk.session.get({ sessionID: newHead })).revert)).toBe(true);

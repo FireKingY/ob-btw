@@ -57,10 +57,16 @@ run(cleanExtension, ['run', 'build']);
 run(cleanExtension, ['run', 'typecheck']);
 run(cleanExtension, ['run', 'check']);
 await verifySource();
+const extensionBundles = {};
+for (const file of ['panel/main.js', 'service/main.js', 'plugin/index.js']) {
+  const bundle = await readFile(join(cleanExtension, file));
+  extensionBundles[file] = createHash('sha256').update(bundle).digest('hex');
+  await writeFile(join(source, file), bundle);
+}
 const record = { sourceBaseCommit: manifest.baseCommit,
   patchSha256: createHash('sha256').update(await readFile(join(source, 'host.patch'))).digest('hex'),
   verifiedSourceFiles: manifest.files.length, cleanPatchReconstruction: 'passed', cleanHostTypecheck: 'passed', cleanHostChangedGate: 'passed',
-  cleanHostBuild: 'passed', cleanExtensionBuild: 'passed', cleanExtensionTypecheck: 'passed', extensionManifest: 'passed',
+  cleanHostBuild: 'passed', cleanExtensionBuild: 'passed', cleanExtensionTypecheck: 'passed', extensionManifest: 'passed', extensionBundles,
   scope: 'Pinned upstream source plus public host.patch. Workspace links resolve to the reconstructed source; third-party dependencies are reused.' };
 await writeFile(join(source, 'verification/release-proof.json'), JSON.stringify(record, null, 2) + '\n');
 await writeFile(join(output, 'release-directory.json'), JSON.stringify({ directory: root, host: cleanHost, extension: cleanExtension }, null, 2));

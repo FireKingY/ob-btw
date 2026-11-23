@@ -1,5 +1,13 @@
 {
   "inheritedPartialProgress": true,
+  "sourceIDs": [
+    "msg_20752f0a6001iojwxGEs3A1vd3",
+    "msg_20752f107001jcGRpOgn8c19ft"
+  ],
+  "clonedIDs": [
+    "msg_20752f96e001QLkZw5fcErzdsw_4",
+    "msg_20752f96e001QLkZw5fcErzdsw_5"
+  ],
   "inheritedIDsPreserved": false,
   "firstRunningTurnSideQuestion": "passed",
   "latestSnapshotOnNextFork": "passed",

@@ -1,0 +1,44 @@
+{
+  "hostVersion": "2.8.0",
+  "opencodeVersion": "2.3.2",
+  "extensionVersion": "1.7.0",
+  "sourceBaseCommit": "30c70496a5ca0105e04e60a783964576973edc8f",
+  "hostPatchSha256": "56593a098c61c0cc0ecb6fec85690993b584f05d40838950497614a9280277e5",
+  "changedGate": "passed",
+  "pureHostBuild": "passed",
+  "combinedLocalBuild": "passed",
+  "affectedUnitTests": 696,
+  "coordinatorReloadTests": 3,
+  "localActivityTests": 104,
+  "localMarkdownTests": 95,
+  "nativeScenarios": [
+    "ordinary fixed snapshot and shared menu",
+    "live three turns and original premises",
+    "cold source",
+    "cold source with instruction changes",
+    "first-send recovery",
+    "quoted context and undo"
+  ],
+  "localCoexistence": {
+    "runtime": "Electron 45.2.1 / openchamber-ui://app",
+    "nativeBtw": true,
+    "mathInMainAndSide": true,
+    "activityToggleAndReload": true,
+    "sideSelectionPreserved": true,
+    "continueWorktreeTopLevel": true,
+    "fileLinkContextMenu": true,
+    "documentMathAndOutline": true,
+    "errors": [],
+    "scope": "Built native UI and real OpenCode with synthetic provider. Static assets served from the prepared desktop folder. File menu desktop bridge simulated; no clipboard or Finder operation."
+  },
+  "scope": "Published host patch contains BTW only. Local installation retains activity ordering, the existing Markdown compatibility snapshot, Markdown Math, file-link-menu and continue-in-worktree. Final #7076 fixes are outside this release.",
+  "upstreamBehavior": {
+    "scenarios": 505,
+    "passed": 505,
+    "failed": 0,
+    "automaticRetryPassed": [
+      "skills.create.agents-location"
+    ],
+    "record": "behavior-2.8.0.json"
+  }
+}

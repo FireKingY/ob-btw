@@ -1,7 +1,7 @@
 {
-  "sourceBaseCommit": "1a151518c95cc5ff3578bab593d2f96862ff3bb8",
-  "patchSha256": "40494098552e6d82e3796220d56f65ac67204ad081c84cc21859d92d84c4ccba",
-  "verifiedSourceFiles": 88,
+  "sourceBaseCommit": "30c70496a5ca0105e04e60a783964576973edc8f",
+  "patchSha256": "56593a098c61c0cc0ecb6fec85690993b584f05d40838950497614a9280277e5",
+  "verifiedSourceFiles": 107,
   "cleanPatchReconstruction": "passed",
   "cleanHostTypecheck": "passed",
   "cleanHostChangedGate": "passed",
@@ -9,5 +9,17 @@
   "cleanExtensionBuild": "passed",
   "cleanExtensionTypecheck": "passed",
   "extensionManifest": "passed",
-  "scope": "Pinned upstream source plus public host.patch. Workspace links resolve to the reconstructed source; third-party dependencies are reused."
+  "scope": "Pinned upstream source plus public host.patch. Workspace links resolve to the reconstructed source; third-party dependencies are reused.",
+  "extensionBundles": {
+    "panel/main.js": "0a8abb228cf2fc1cd761d4c65d00dc91162692ef265b1a10ba1e45dcd36a6527",
+    "service/main.js": "75f27cca303f1b6eccf5efba00e4cfb86a5b1e16830aa944601eb3effaaeb17f",
+    "plugin/index.js": "8f2720be6949adccb12390dc484bad5e5c09c7caa4db2a1f996ea21b32ca42d0"
+  },
+  "coordinatorReloadTests": 3,
+  "nativeBtwScenarioUpdated": true,
+  "postBuildScenarioUpdate": {
+    "file": "scripts/verify/zones/composer.json",
+    "freshPatchReconstruction": "passed",
+    "applicationSourceMatchesCleanBuild": true
+  }
 }

@@ -10,7 +10,7 @@ const { chromium, expect } = await import(process.env.BTW_PLAYWRIGHT_MODULE ?? '
 const { OpenCode } = await import(pathToFileURL(join(repo, 'node_modules/@opencode/client/dist/promise/index.js')).href);
 const { LIVE_BTW_RPC } = await import(pathToFileURL(join(repo, 'packages/sdk/dist/btw-rpc.js')).href);
 const { startIsolatedServer } = await import(pathToFileURL(join(repo, 'scripts/perf/isolated-server.mjs')).href);
-const { createPermissionAutoAcceptRuntime } = await import(pathToFileURL(join(repo, 'packages/web/server/lib/permission-auto-accept/runtime.js')).href);
+const { createPermissionAutoAcceptRuntime } = await import(pathToFileURL(join(repo, 'packages/web/server/lib/permission-auto-accept/runtime.ts')).href);
 const output = resolve(process.env.BTW_OUTPUT_DIR ?? join(tmpdir(), 'ob-btw-verification'));
 await mkdir(output, { recursive: true });
 const root = await mkdtemp(join(output, 'live-btw-'));
@@ -81,6 +81,7 @@ let server: Awaited<ReturnType<typeof startIsolatedServer>> | undefined;
 const browser = await chromium.launch({ executablePath: process.env.BTW_CHROME_EXECUTABLE, headless: true,
   args: ['--disable-features=MacAppCodeSignClone'] });
 const page = await browser.newPage({ viewport: { width: 1800, height: 1040 } });
+await page.addInitScript(() => localStorage.setItem('openchamber.i18n.v1', JSON.stringify({ locale: 'en' })));
 const errors: string[] = [];
 const rpcErrors: unknown[] = [];
 const permissionWrites: string[] = [];
@@ -210,7 +211,7 @@ try {
     const firstSessionID = await side.getAttribute('data-chat-session-id');
     if (!firstSessionID) throw new Error('The first live conversation has no session ID.');
     const rootSessionID = (await sdk.session.get({ sessionID: firstSessionID })).metadata.openchamber.btwLiveRootSessionID;
-    await expect.poll(async () => (await sdk.session.get({ sessionID: rootSessionID })).metadata.openchamber.btwLiveLease).toBeNull();
+    await expect.poll(async () => (await sdk.session.get({ sessionID: rootSessionID })).metadata.openchamber.btwLiveContainer.btwLiveLease).toBeNull();
     const permissionButton = side.getByRole('button', { name: /^Permissions:/ });
     const writesBeforeChoice = permissionWrites.length;
     const permissionBefore = await permissionButton.getAttribute('aria-label');
@@ -272,7 +273,7 @@ try {
     const oldPremises = finalNative.filter((message) => message.metadata?.openchamberLiveBtwBasis && !message.metadata?.openchamberLiveBtwEnd);
     expect(oldPremises[0]?.metadata?.openchamberLiveBtwBasis).toEqual(firstBasis);
     const oldRoot = await sdk.session.get({ sessionID: rootSessionID });
-    expect(oldRoot.metadata?.openchamber?.btwLiveHeadSessionID).toBe(currentHead);
+    expect(oldRoot.metadata?.openchamber?.btwLiveContainer?.btwLiveHeadSessionID).toBe(currentHead);
     expect((await sdk.session.get({ sessionID: currentHead! })).parentID).toBe(rootSessionID);
     expect((await sdk.session.get({ sessionID: currentHead! })).metadata?.openchamber?.project_context_pins).toEqual(pins);
     expect(parentPrefix).toContain('PINNED_MAIN_REFERENCE');
@@ -304,7 +305,7 @@ try {
     const requestsBeforeEmpty = requests.length;
     const thirdHead = await side.getAttribute('data-chat-session-id');
     await main.locator('.cm-content').click();
-    await page.keyboard.insertText('/live-btw');
+    await page.keyboard.insertText('/live-btw ');
     await page.keyboard.press('Escape');
     await page.keyboard.press('Enter');
     await expect(side).not.toHaveAttribute('data-chat-session-id', thirdHead!);
